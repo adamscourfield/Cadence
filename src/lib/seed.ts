@@ -1,6 +1,7 @@
 // Synthetic demo lessons so a fresh install has something to explore.
 // Clearly labelled as demo data in the UI; deterministic via a seeded RNG.
 import { heuristicAnalysis } from "./analysis/heuristic";
+import { detectBehaviourEvents } from "./behaviour";
 import { buildAssessment } from "./triangulate";
 import type { Lesson, Speaker, TranscriptSegment } from "./types";
 
@@ -31,6 +32,7 @@ const STRONG_MODEL: Line[] = [
   ["teacher", "Jamal, what did your partner say?", 2.8],
   ["student", "Three sevenths is smaller than two thirds so it can't be the answer."],
   ["teacher", "I like how you used an estimate to check. That's a brilliant reasoning move.", 1],
+  ["teacher", "That's a merit for you, Jamal.", 1],
 ];
 const STRONG_CHECK: Line[] = [
   ["teacher", "Mini whiteboards. One half plus one third. Show me on three. One, two, three — boards up.", 5],
@@ -68,7 +70,8 @@ const WEAK_EXPLAIN: Line[] = [
 ];
 const WEAK_PRACTICE: Line[] = [
   ["teacher", "Right, do the worksheet. Questions one to twenty.", 900],
-  ["teacher", "Shh. Stop talking at the back. Just get on with it.", 420],
+  ["teacher", "Shh. Stop talking at the back. Just get on with it.", 4],
+  ["teacher", "Ben, that's a demerit for talking over me again.", 420],
   ["teacher", "What's a half plus a third? Anyone? Six? It's five sixths.", 0.5],
   ["teacher", "Well done.", 0.4],
   ["teacher", "Does that make sense? Great. Finish it for homework.", 1],
@@ -149,6 +152,7 @@ export function seedLessons(): Lesson[] {
       segments,
       analysis,
       assessment: hasAssessment ? { ...buildAssessment("exit-ticket", results), uploadedAt: date } : null,
+      behaviourEvents: detectBehaviourEvents(segments, YEARS[i % YEARS.length]),
     });
   }
   return lessons.reverse();

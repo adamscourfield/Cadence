@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { analyseLesson } from "@/lib/analysis";
+import { detectBehaviourEvents } from "@/lib/behaviour";
 import { listLessons, saveLesson } from "@/lib/store";
 import { parseTranscript } from "@/lib/transcript";
 import type { Lesson } from "@/lib/types";
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
     segments: usable,
     analysis: null,
     assessment: null,
+    behaviourEvents: detectBehaviourEvents(usable, b.yearGroup),
   };
   lesson.analysis = await analyseLesson(lesson);
   await saveLesson(lesson);

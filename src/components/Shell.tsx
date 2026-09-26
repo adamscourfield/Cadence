@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenCheck, LayoutGrid, LineChart, Mic, Radio, Upload } from "lucide-react";
+import { Award, BookOpenCheck, LayoutGrid, LineChart, Mic, Radio, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -10,9 +10,13 @@ const NAV = [
   { href: "/live", label: "Live", icon: Mic },
   { href: "/lessons", label: "Lessons", icon: Radio },
   { href: "/lessons/new", label: "Import", icon: Upload },
+  { href: "/behaviour", label: "Behaviour", icon: Award },
   { href: "/insights", label: "Insights", icon: LineChart },
   { href: "/rubric", label: "Rubric", icon: BookOpenCheck },
 ];
+
+// The mobile tab bar only has room for the five most-used destinations.
+const MOBILE_NAV_EXCLUDE = new Set(["/lessons/new", "/behaviour"]);
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -75,7 +79,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-line bg-bg/85 backdrop-blur-xl grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
-        {NAV.filter((n) => n.href !== "/lessons/new").map(({ href, label, icon: Icon }) => {
+        {NAV.filter((n) => !MOBILE_NAV_EXCLUDE.has(n.href)).map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <Link key={href} href={href} className={`flex flex-col items-center gap-1 py-2.5 text-[10px] ${active ? "text-cyan" : "text-muted"}`}>

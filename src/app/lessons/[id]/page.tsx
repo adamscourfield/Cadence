@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Cpu, Quote, Sparkles, Target, TrendingUp } from "lucide-react";
+import { ArrowLeft, Cpu, Quote, ShieldCheck, Sparkles, Target, TrendingUp } from "lucide-react";
 import { getLesson } from "@/lib/store";
+import { getRoster } from "@/lib/roster";
 import { LEVEL_NAMES, RUBRIC_BY_ID } from "@/lib/rubric";
 import { formatClock } from "@/lib/transcript";
 import type { QuestionType } from "@/lib/types";
 import { AssessmentPanel } from "@/components/AssessmentPanel";
+import { BehaviourPanel } from "@/components/BehaviourPanel";
 import { ReportActions } from "@/components/ReportActions";
 import { TranscriptView } from "@/components/TranscriptView";
 import { LessonTimeline } from "@/components/LessonTimeline";
@@ -184,6 +186,14 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
           </section>
         </>
       )}
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold tracking-tight mb-1 flex items-center gap-2">
+          <ShieldCheck size={18} className="text-lime" /> Behaviour
+        </h2>
+        <p className="text-sm text-muted mb-4">Merits and sanctions Cadence heard in the transcript, awaiting your confirmation.</p>
+        <BehaviourPanel lessonId={lesson.id} events={lesson.behaviourEvents} roster={getRoster(lesson.yearGroup)} />
+      </section>
 
       <section id="outcomes" className="mt-8 scroll-mt-24">
         <h2 className="text-xl font-semibold tracking-tight mb-1 flex items-center gap-2">

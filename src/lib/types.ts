@@ -82,6 +82,26 @@ export interface Assessment {
   masteryThreshold: number;
 }
 
+export type BehaviourType = "merit" | "demerit" | "detention" | "room-removal";
+
+export interface BehaviourEvent {
+  id: string;
+  type: BehaviourType;
+  /** Seconds from lesson start. */
+  at: number;
+  segmentId: string;
+  /** The sentence the trigger phrase was detected in. */
+  quote: string;
+  /** Name as heard in the transcript, before roster matching. Null if nothing nameable was found nearby. */
+  studentRaw: string | null;
+  /** Roster name this was resolved to, when the raw name matched exactly one student in the class. */
+  studentMatch: string | null;
+  /** Other roster names the raw name could equally have meant — surfaced so the teacher can pick. */
+  candidates: string[];
+  /** Detection always needs a human to confirm before it counts against a student's record. */
+  status: "pending" | "confirmed" | "dismissed";
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -95,6 +115,8 @@ export interface Lesson {
   segments: TranscriptSegment[];
   analysis: LessonAnalysis | null;
   assessment: Assessment | null;
+  /** Merits/sanctions detected from the transcript. Empty until confirmed by the teacher. */
+  behaviourEvents: BehaviourEvent[];
 }
 
 export type LessonSummary = Omit<Lesson, "segments">;

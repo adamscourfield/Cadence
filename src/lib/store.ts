@@ -16,7 +16,11 @@ let queue: Promise<unknown> = Promise.resolve();
 
 async function read(): Promise<Db> {
   try {
-    return JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ DB_PATH, "utf8")) as Db;
+    const db = JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ DB_PATH, "utf8")) as Db;
+    // Backfill fields added after a db file was first written, so an existing local db.json
+    // never crashes a fresh deploy of the code.
+    for (const lesson of db.lessons) lesson.behaviourEvents ??= [];
+    return db;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     const db = { lessons: seedLessons() };
