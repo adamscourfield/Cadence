@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Real-time, evidence-based feedback on what teachers say and what students learn.",
 };
 
-export const viewport: Viewport = { themeColor: "#f5f6fa" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

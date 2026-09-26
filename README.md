@@ -71,3 +71,7 @@ These are stated plainly on purpose:
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Anthropic SDK · Zod
+
+## Design
+
+Flat, monochrome-first UI (white surfaces, near-black chrome, 1px borders instead of shadows) with colour reserved for data — score bands, question types, rubric levels — rather than branding. This deliberately follows [Anaxi](https://github.com/adamscourfield/anaxi)'s design language, since Cadence is intended to become a module inside it. All tokens live in `src/app/globals.css`.

@@ -117,7 +117,7 @@ function Scatter({ points }: { points: { id: string; title: string; x: number; y
             href={`/lessons/${p.id}`}
             title={`${p.title} — delivery ${p.x}, mastery ${p.y}%`}
             className="absolute size-3 -translate-x-1/2 translate-y-1/2 rounded-full ring-2 ring-bg hover:scale-150 transition-transform"
-            style={{ left: `${4 + p.x * 0.92}%`, bottom: `${4 + p.y * 0.92}%`, background: scoreColor(p.x), boxShadow: `0 0 12px ${scoreColor(p.x)}` }}
+            style={{ left: `${4 + p.x * 0.92}%`, bottom: `${4 + p.y * 0.92}%`, background: scoreColor(p.x) }}
           />
         ))}
       </div>

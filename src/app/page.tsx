@@ -120,7 +120,6 @@ export default async function Dashboard() {
         <div className="flex flex-col gap-4">
           {last5[0]?.analysis?.nextSteps[0] && (
             <div className="glass p-5 relative overflow-hidden">
-              <div className="absolute -top-16 -right-16 size-40 rounded-full bg-violet/20 blur-3xl" />
               <div className="eyebrow flex items-center gap-2">
                 <Sparkles size={12} className="text-violet" /> Focus for next lesson
               </div>

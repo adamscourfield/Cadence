@@ -113,7 +113,6 @@ export function AssessmentPanel({
 
         {verdict && overall !== null && (
           <div className="glass p-5 relative overflow-hidden">
-            <div className="absolute -top-24 -left-16 size-56 rounded-full bg-pink/10 blur-3xl" />
             <div className="eyebrow">Triangulation</div>
             <div className="mt-3 text-2xl font-semibold tracking-tight">{verdict.headline}</div>
             <p className="mt-2 text-sm text-muted leading-relaxed">{verdict.detail}</p>

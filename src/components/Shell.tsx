@@ -27,7 +27,7 @@ function isActive(pathname: string, href: string) {
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-3.5 group">
-      <span className="relative grid place-items-center size-10 shrink-0 rounded-[12px] bg-gradient-to-br from-cyan to-violet shadow-[0_6px_20px_-6px_var(--cyan)] transition-transform group-hover:scale-105">
+      <span className="relative grid place-items-center size-10 shrink-0 rounded-[10px] bg-[linear-gradient(135deg,var(--ink),var(--ink-2))] transition-transform group-hover:scale-105">
         <svg width="22" height="22" viewBox="0 0 56 56" fill="none">
           <path d="M10 40 L28 16 L46 40" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
           <circle cx="10" cy="40" r="5.5" fill="white" />

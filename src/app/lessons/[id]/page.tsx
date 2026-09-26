@@ -130,7 +130,6 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
               </ul>
             </div>
             <div className="glass p-5 relative overflow-hidden">
-              <div className="absolute -bottom-20 -right-10 size-48 rounded-full bg-cyan/15 blur-3xl" />
               <div className="eyebrow flex items-center gap-2">
                 <Target size={12} className="text-cyan" /> Try next lesson
               </div>

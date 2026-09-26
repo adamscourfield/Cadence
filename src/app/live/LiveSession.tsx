@@ -206,8 +206,8 @@ export function LiveSession() {
       const bars = 48;
       const bw = w / bars;
       const grad = ctx2d.createLinearGradient(0, 0, w, 0);
-      grad.addColorStop(0, "#0891b2");
-      grad.addColorStop(1, "#6d5bf5");
+      grad.addColorStop(0, "#6366f1");
+      grad.addColorStop(1, "#7c3aed");
       ctx2d.fillStyle = grad;
       for (let i = 0; i < bars; i++) {
         const v = data[Math.floor((i / bars) * 40)] / 255;
@@ -724,9 +724,9 @@ function ModeCard({ active, onClick, icon, title, body }: { active: boolean; onC
   return (
     <button
       onClick={onClick}
-      className={`text-left rounded-2xl p-4 border transition-all ${active ? "border-cyan/60 bg-cyan/5 shadow-[0_0_30px_-12px_var(--cyan)]" : "border-line bg-panel hover:border-line-strong"}`}
+      className={`text-left rounded-lg p-4 border transition-all ${active ? "border-[var(--ink)]/40 bg-well" : "border-line bg-panel hover:border-line-strong"}`}
     >
-      <div className={active ? "text-cyan" : "text-muted"}>{icon}</div>
+      <div className={active ? "text-ink" : "text-muted"}>{icon}</div>
       <div className="mt-2 font-medium text-sm">{title}</div>
       <div className="mt-1 text-xs text-muted leading-relaxed">{body}</div>
     </button>
