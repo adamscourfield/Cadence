@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { AlertTriangle, Clapperboard, Mic, MicOff, ShieldCheck, Square, Zap } from "lucide-react";
+import { AlertTriangle, ChevronDown, Clapperboard, Mic, MicOff, ShieldCheck, Square, Zap } from "lucide-react";
 import { CFU, classifyQuestion, isQuestion, splitSentences, THINK_TIME, wordCount } from "@/lib/analysis/patterns";
 import { QTYPE_COLOR } from "@/lib/qtype";
 import { demoScript } from "@/lib/seed";
@@ -59,6 +59,7 @@ const NUDGE_COOLDOWN = 240; // seconds before the same nudge can fire again
 export function LiveSession() {
   const router = useRouter();
   const [phase, setPhase] = useState<"setup" | "live" | "saving">("setup");
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [mode, setMode] = useState<"mic" | "demo">("mic");
   const [meta, setMeta] = useState({ title: "", subject: "", yearGroup: "", teacher: "" });
   const [consent, setConsent] = useState(false);
@@ -474,9 +475,9 @@ export function LiveSession() {
   const nudgeActive = nudges[0] && clock - nudges[0].at < 20 ? nudges[0] : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-4">
       <div className="flex flex-col gap-4 min-w-0">
-        <div className="glass p-5 flex items-center gap-5">
+        <div className="glass p-5 flex items-center gap-5 sticky top-16 lg:static z-20">
           <div className="relative size-12 shrink-0 grid place-items-center rounded-full bg-red/15 pulse-ring">
             <span className="size-3 rounded-full bg-red shadow-[0_0_12px_var(--red)]" />
           </div>
@@ -510,7 +511,15 @@ export function LiveSession() {
 
         {error && <div className="text-sm text-red flex items-center gap-2"><MicOff size={14} /> {error}</div>}
 
-        <div className="glass flex flex-col min-h-[420px] max-h-[62vh]">
+        <button
+          onClick={() => setMobileDetailOpen((v) => !v)}
+          className="lg:hidden flex items-center justify-between text-sm rounded-2xl px-4 h-12 bg-panel border border-line text-muted"
+        >
+          <span>{mobileDetailOpen ? "Hide transcript & live stats" : `${live.substantive.length} questions · ${live.meanWait === null ? "—" : `${live.meanWait.toFixed(1)}s wait`} · show detail`}</span>
+          <ChevronDown size={16} className={`transition-transform ${mobileDetailOpen ? "rotate-180" : ""}`} />
+        </button>
+
+        <div className={`${mobileDetailOpen ? "flex" : "hidden"} lg:flex glass flex-col min-h-[420px] max-h-[62vh]`}>
           <div className="px-5 pt-4 pb-2 eyebrow">Live transcript</div>
           <div ref={feedRef} className="flex-1 overflow-y-auto px-5 pb-5 flex flex-col gap-3">
             {segments.length === 0 && !interim && <div className="text-muted text-sm">Listening… start teaching.</div>}
@@ -541,7 +550,7 @@ export function LiveSession() {
         </div>
       </div>
 
-      <aside className="flex flex-col gap-4">
+      <aside className={`${mobileDetailOpen ? "flex" : "hidden"} lg:flex flex-col gap-4 mt-4 lg:mt-0`}>
         <div className="glass p-5 grid grid-cols-2 gap-5">
           <Gauge label="Questions" value={`${live.substantive.length}`} sub={`${live.openPct}% open`} color="var(--cyan)" />
           <Gauge
