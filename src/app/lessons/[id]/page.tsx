@@ -33,6 +33,7 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
               {lesson.yearGroup && ` · ${lesson.yearGroup}`} · {formatDate(lesson.date)}
             </div>
             <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">{lesson.title}</h1>
+            {lesson.objective && <p className="mt-2 text-sm text-muted max-w-2xl">{lesson.objective}</p>}
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="chip">{lesson.teacher}</span>
               {lesson.source === "demo" && <span className="chip">demo data</span>}

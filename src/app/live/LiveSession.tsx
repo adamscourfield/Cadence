@@ -61,7 +61,7 @@ export function LiveSession() {
   const router = useRouter();
   const [phase, setPhase] = useState<"setup" | "live" | "saving">("setup");
   const [mode, setMode] = useState<"mic" | "demo">("mic");
-  const [meta, setMeta] = useState({ title: "", subject: "", yearGroup: "", teacher: "" });
+  const [meta, setMeta] = useState({ title: "", subject: "", yearGroup: "", teacher: "", objective: "" });
   const [consent, setConsent] = useState(false);
   const supported = useSyncExternalStore(
     noopSubscribe,
@@ -236,6 +236,9 @@ export function LiveSession() {
     setClock(0);
     liveRef.current = true;
     setPhase("live");
+    // The setup form can be scrolled a fair way down (e.g. behind a mobile sticky header);
+    // jump back to the top so the recording UI isn't partly hidden underneath it.
+    window.scrollTo({ top: 0 });
     try {
       wakeRef.current = await (navigator as unknown as { wakeLock?: { request(t: "screen"): Promise<{ release(): Promise<void> }> } }).wakeLock?.request("screen") ?? null;
     } catch {
@@ -408,6 +411,7 @@ export function LiveSession() {
         subject: meta.subject || "General",
         yearGroup: meta.yearGroup,
         teacher: meta.teacher || "Me",
+        objective: meta.objective || undefined,
         source: "live",
         segments: finalSegments,
       }),
@@ -432,6 +436,12 @@ export function LiveSession() {
           <div className="eyebrow">Lesson details</div>
           <div className="mt-4 grid sm:grid-cols-2 gap-3">
             <input className="field sm:col-span-2" placeholder="Lesson title — e.g. Adding fractions" value={meta.title} onChange={(e) => setMeta({ ...meta, title: e.target.value })} />
+            <input
+              className="field sm:col-span-2"
+              placeholder="Lesson objective — e.g. Add fractions with different denominators"
+              value={meta.objective}
+              onChange={(e) => setMeta({ ...meta, objective: e.target.value })}
+            />
             <input className="field" placeholder="Subject" value={meta.subject} onChange={(e) => setMeta({ ...meta, subject: e.target.value })} />
             <input className="field" placeholder="Year group / class" value={meta.yearGroup} onChange={(e) => setMeta({ ...meta, yearGroup: e.target.value })} />
             <input className="field sm:col-span-2" placeholder="Teacher" value={meta.teacher} onChange={(e) => setMeta({ ...meta, teacher: e.target.value })} />
@@ -478,15 +488,26 @@ export function LiveSession() {
   const nudgeActive = nudges[0] && clock - nudges[0].at < 20 ? nudges[0] : null;
   const busyLabel = transcribing ? "Transcribing…" : phase === "saving" ? "Analysing…" : null;
 
+  const classLabel = [meta.yearGroup, meta.subject].filter(Boolean).join(" · ");
+
   return (
     <>
       <div className="hidden lg:block">
-        <PageHeader eyebrow="Live" title={<>Teaching, <span className="glow-text">heard clearly.</span></>} />
+        <PageHeader
+          eyebrow={classLabel || "Live"}
+          title={meta.objective || <>Teaching, <span className="glow-text">heard clearly.</span></>}
+        />
       </div>
 
       {/* Mobile: stripped down to what matters while you're teaching — time, questions, nudges. */}
       <div className="lg:hidden flex flex-col items-center gap-6 pt-2 pb-4">
-        <div className="eyebrow">{mode === "demo" ? "Demo · fast-forwarding silences" : "Recording"}</div>
+        <div className="w-full text-center px-2">
+          <div className="eyebrow">{classLabel || (mode === "demo" ? "Demo lesson" : "Live lesson")}</div>
+          <div className="mt-1.5 text-[15px] font-medium leading-snug">
+            {meta.objective || <span className="text-dim font-normal italic">No lesson objective set</span>}
+          </div>
+          {mode === "demo" && <div className="mt-1 text-[11px] text-dim">Demo · fast-forwarding silences</div>}
+        </div>
 
         <div className="w-full min-h-[52px] flex items-center">
           {nudgeActive && (

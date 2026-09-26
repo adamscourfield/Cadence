@@ -88,6 +88,8 @@ export interface Lesson {
   subject: string;
   yearGroup: string;
   teacher: string;
+  /** What students should know or be able to do by the end of the lesson. */
+  objective?: string;
   date: string;
   source: "live" | "import" | "demo";
   segments: TranscriptSegment[];
