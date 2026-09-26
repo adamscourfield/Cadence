@@ -485,34 +485,38 @@ export function LiveSession() {
       </div>
 
       {/* Mobile: stripped down to what matters while you're teaching — time, questions, nudges. */}
-      <div className="lg:hidden flex flex-col items-center gap-5 pt-1">
+      <div className="lg:hidden flex flex-col items-center gap-6 pt-2 pb-4">
         <div className="eyebrow">{mode === "demo" ? "Demo · fast-forwarding silences" : "Recording"}</div>
 
-        {nudgeActive && (
-          <div
-            key={nudgeActive.id}
-            className="rise w-full rounded-2xl px-4 py-3 border text-sm font-medium flex items-center gap-3"
-            style={{
-              borderColor: nudgeActive.tone === "warn" ? "color-mix(in srgb, var(--amber) 40%, transparent)" : "color-mix(in srgb, var(--lime) 40%, transparent)",
-              background: nudgeActive.tone === "warn" ? "color-mix(in srgb, var(--amber) 8%, white)" : "color-mix(in srgb, var(--lime) 8%, white)",
-              color: nudgeActive.tone === "warn" ? "var(--amber)" : "var(--lime)",
-            }}
-          >
-            <Zap size={16} className="shrink-0" /> {nudgeActive.text}
-          </div>
-        )}
+        <div className="w-full min-h-[52px] flex items-center">
+          {nudgeActive && (
+            <div
+              key={nudgeActive.id}
+              className="rise w-full rounded-2xl px-4 py-3 border text-sm font-medium flex items-center gap-3"
+              style={{
+                borderColor: nudgeActive.tone === "warn" ? "color-mix(in srgb, var(--amber) 40%, transparent)" : "color-mix(in srgb, var(--lime) 40%, transparent)",
+                background: nudgeActive.tone === "warn" ? "color-mix(in srgb, var(--amber) 8%, white)" : "color-mix(in srgb, var(--lime) 8%, white)",
+                color: nudgeActive.tone === "warn" ? "var(--amber)" : "var(--lime)",
+              }}
+            >
+              <Zap size={16} className="shrink-0" /> {nudgeActive.text}
+            </div>
+          )}
+        </div>
         {error && <div className="text-sm text-red flex items-center gap-2"><MicOff size={14} /> {error}</div>}
 
-        <CircularTimer clock={clock} onStop={stop} disabled={phase === "saving" || transcribing} busyLabel={busyLabel} />
+        <div className="py-2">
+          <CircularTimer clock={clock} onStop={stop} disabled={phase === "saving" || transcribing} busyLabel={busyLabel} />
+        </div>
 
         <div className="text-center">
           <div className="text-4xl font-semibold tabular-nums">{live.substantive.length}</div>
-          <div className="eyebrow mt-1">{live.substantive.length === 1 ? "question asked" : "questions asked"}</div>
+          <div className="eyebrow mt-1.5">{live.substantive.length === 1 ? "question asked" : "questions asked"}</div>
         </div>
 
         <div className="glass w-full p-4 h-36 flex flex-col">
-          <div className="eyebrow mb-2 shrink-0">Transcript</div>
-          <div className="flex-1 flex flex-col justify-end gap-1.5 overflow-hidden">
+          <div className="eyebrow mb-2.5 shrink-0">Transcript</div>
+          <div className="flex-1 flex flex-col justify-end gap-2 overflow-hidden">
             {segments.length === 0 && !interim && <div className="text-muted text-sm">Listening… start teaching.</div>}
             {segments.slice(-4).map((s, i, arr) => (
               <div key={s.id} className="text-sm leading-snug truncate" style={{ opacity: 0.15 + (0.85 * (i + 1)) / arr.length }}>
@@ -655,7 +659,7 @@ function CircularTimer({ clock, onStop, disabled, busyLabel }: { clock: number; 
       onClick={onStop}
       disabled={disabled}
       aria-label="End lesson and analyse"
-      className="relative mx-auto grid place-items-center shrink-0 rounded-full disabled:opacity-70"
+      className="relative mx-auto grid place-items-center shrink-0 rounded-full overflow-hidden disabled:opacity-70"
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="absolute inset-0 -rotate-90">
