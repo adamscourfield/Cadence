@@ -23,17 +23,17 @@ function isActive(pathname: string, href: string) {
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-3 group">
-      <span className="relative grid place-items-center size-9 rounded-xl bg-gradient-to-br from-cyan to-violet shadow-[0_0_30px_-6px_var(--cyan)]">
-        <span className="absolute inset-[3px] rounded-[9px] bg-bg" />
-        <span className="relative flex items-end gap-[2px] h-4">
-          {[6, 12, 16, 9].map((h, i) => (
-            <span key={i} className="w-[3px] rounded-full bg-gradient-to-t from-cyan to-violet" style={{ height: h }} />
-          ))}
-        </span>
+      <span className="relative grid place-items-center size-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan to-violet shadow-[0_0_30px_-6px_var(--cyan)]">
+        <svg width="19" height="19" viewBox="0 0 56 56" fill="none">
+          <circle cx="10" cy="40" r="5.5" fill="white" />
+          <circle cx="28" cy="16" r="5.5" fill="white" />
+          <circle cx="46" cy="40" r="5.5" fill="white" />
+          <path d="M10 40 L28 16 L46 40" stroke="white" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
       </span>
       <span className="leading-none">
-        <span className="block font-semibold tracking-tight text-[15px]">RTR</span>
-        <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-muted">Read the Room</span>
+        <span className="block font-semibold tracking-tight text-[15px]">Cadence</span>
+        <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-muted">Lesson feedback</span>
       </span>
     </Link>
   );

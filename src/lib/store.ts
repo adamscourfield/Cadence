@@ -6,7 +6,7 @@ import type { Lesson, LessonSummary } from "./types";
 
 // A single JSON file keeps the MVP dependency-free. Swap this module for a real
 // database (Postgres etc.) before multi-user or serverless deployment.
-const DB_PATH = process.env.RTR_DB_PATH ?? path.join(process.cwd(), "data", "rtr-db.json");
+const DB_PATH = process.env.CADENCE_DB_PATH ?? path.join(process.cwd(), "data", "cadence-db.json");
 
 interface Db {
   lessons: Lesson[];

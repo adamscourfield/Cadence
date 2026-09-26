@@ -49,7 +49,7 @@ export function triangulate(overall: number, masteryPct: number): { verdict: Ver
     return {
       verdict: "aligned-strong",
       headline: "Delivery and outcomes agree",
-      detail: "The teaching moves RTR heard are showing up in what students can do. Keep these moves.",
+      detail: "The teaching moves Cadence heard are showing up in what students can do. Keep these moves.",
     };
   if (!goodDelivery && !goodOutcome)
     return {

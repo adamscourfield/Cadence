@@ -185,7 +185,7 @@ export function ImportForm() {
             <p className="text-xs text-dim mt-3 leading-relaxed">
               Transcribed with speaker diarization, so teacher and student talk are separated automatically — something a plain
               text transcript usually can&apos;t give you. The audio itself is sent for transcription and then discarded; it
-              isn&apos;t stored by RTR.
+              isn&apos;t stored by Cadence.
             </p>
           </div>
         )}

@@ -5,7 +5,7 @@ import { compositeScore, LEVEL_NAMES, RUBRIC } from "../rubric";
 import type { LessonAnalysis, TranscriptSegment } from "../types";
 import { computeMetrics, extractQuestions } from "./heuristic";
 
-const MODEL = process.env.RTR_MODEL ?? "claude-opus-5";
+const MODEL = process.env.CADENCE_MODEL ?? "claude-opus-5";
 
 const DimensionIds = z.enum(["questioning", "checking", "explanation", "retrieval", "feedback", "waitTime", "practice"]);
 
@@ -30,7 +30,7 @@ const AnalysisSchema = z.object({
   summary: z.string(),
 });
 
-const SYSTEM = `You are RTR, an instructional coach that analyses classroom lesson transcripts against an evidence-based rubric.
+const SYSTEM = `You are Cadence, an instructional coach that analyses classroom lesson transcripts against an evidence-based rubric.
 
 Principles:
 - Judge only what the transcript shows. Audio misses body language, board work, circulation and silent student work; when evidence is thin, say so in the rationale and score conservatively rather than guessing.

@@ -1,8 +1,8 @@
-# RTR · Read the Room
+# Cadence
 
 Real-time, evidence-based feedback on what teachers say, checked against what students can then do.
 
-RTR transcribes a lesson, scores it against a research-based rubric, classifies every question, measures wait time, pace and checks for understanding, and gives quoted evidence plus concrete next steps. Upload the exit ticket afterwards and RTR **triangulates**: did the delivery actually land? Across many lessons, the Insights view shows which behaviours and phrases go with higher student mastery.
+Cadence transcribes a lesson, scores it against a research-based rubric, classifies every question, measures wait time, pace and checks for understanding, and gives quoted evidence plus concrete next steps. Upload the exit ticket afterwards and Cadence **triangulates**: did the delivery actually land? Across many lessons, the Insights view shows which behaviours and phrases go with higher student mastery.
 
 ## Features
 
@@ -21,11 +21,11 @@ Seven dimensions, each scored 1–4 (Emerging → Exemplary): questioning depth,
 
 ## Transcription
 
-Audio (from the live recorder or an uploaded file) is transcribed via [AssemblyAI](https://www.assemblyai.com/) with speaker diarization, which is what actually separates teacher from student talk — something a plain-text transcript can only do if it's already labelled `T:`/`S:`. Set `ASSEMBLYAI_API_KEY` to enable it. Audio is sent for transcription and then discarded; RTR never stores it. Without a key, live mode falls back to the browser's own (unlabelled, non-diarizing) speech recognition, and audio-file import is disabled.
+Audio (from the live recorder or an uploaded file) is transcribed via [AssemblyAI](https://www.assemblyai.com/) with speaker diarization, which is what actually separates teacher from student talk — something a plain-text transcript can only do if it's already labelled `T:`/`S:`. Set `ASSEMBLYAI_API_KEY` to enable it. Audio is sent for transcription and then discarded; Cadence never stores it. Without a key, live mode falls back to the browser's own (unlabelled, non-diarizing) speech recognition, and audio-file import is disabled.
 
 ## Analysis engines
 
-- **Claude** (when `ANTHROPIC_API_KEY` is set): the transcript and deterministic timing metrics go to Claude, which returns structured rubric scores with verbatim evidence (`src/lib/analysis/claude.ts`). Model defaults to `claude-opus-5`; override with `RTR_MODEL`.
+- **Claude** (when `ANTHROPIC_API_KEY` is set): the transcript and deterministic timing metrics go to Claude, which returns structured rubric scores with verbatim evidence (`src/lib/analysis/claude.ts`). Model defaults to `claude-opus-5`; override with `CADENCE_MODEL`.
 - **Pattern engine** (always available, no key needed): a transparent regex and timing engine (`src/lib/analysis/heuristic.ts`). It is fast and explainable, but crude. Treat its scores as indicative.
 
 Timing metrics (wait time, pace, talk ratio) are always computed deterministically from timestamps, never estimated by the model.
@@ -38,7 +38,7 @@ cp .env.example .env.local   # optional: add ANTHROPIC_API_KEY
 npm run dev
 ```
 
-Open http://localhost:3000. On first run, 12 synthetic demo lessons are seeded into `data/rtr-db.json`. Delete that file to reset.
+Open http://localhost:3000. On first run, 12 synthetic demo lessons are seeded into `data/cadence-db.json`. Delete that file to reset.
 
 Live transcription uses the browser's Web Speech API (Chrome/Edge). In other browsers, use demo mode or import a transcript.
 

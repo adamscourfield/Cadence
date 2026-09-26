@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/ui";
 import { ImportForm } from "./ImportForm";
 
-export const metadata = { title: "Import transcript · RTR" };
+export const metadata = { title: "Import transcript · Cadence" };
 
 export default function ImportPage() {
   return (

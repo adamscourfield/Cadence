@@ -37,7 +37,7 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
               <span className="chip">{lesson.teacher}</span>
               {lesson.source === "demo" && <span className="chip">demo data</span>}
               {a && (
-                <span className="chip" title={a.engine === "claude" ? "Analysed by Claude against the RTR rubric" : "Pattern-based analysis (no AI key configured)"}>
+                <span className="chip" title={a.engine === "claude" ? "Analysed by Claude against the Cadence rubric" : "Pattern-based analysis (no AI key configured)"}>
                   <Cpu size={11} /> {a.engine === "claude" ? "Claude analysis" : "Pattern engine"}
                 </span>
               )}

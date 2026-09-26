@@ -1,14 +1,14 @@
 import { RUBRIC, LEVEL_NAMES } from "@/lib/rubric";
 import { PageHeader, levelColor } from "@/components/ui";
 
-export const metadata = { title: "Rubric · RTR" };
+export const metadata = { title: "Rubric · Cadence" };
 
 export default function RubricPage() {
   return (
     <>
       <PageHeader eyebrow="Transparency" title="The rubric behind every score" />
       <p className="text-muted max-w-2xl -mt-4 mb-8 rise">
-        RTR scores seven dimensions drawn from well-replicated research on effective instruction. Each is scored 1–4 with quoted evidence from
+        Cadence scores seven dimensions drawn from well-replicated research on effective instruction. Each is scored 1–4 with quoted evidence from
         the transcript. Weights reflect how reliably each can be judged from audio, not how much it matters.
       </p>
       <div className="flex flex-col gap-4">

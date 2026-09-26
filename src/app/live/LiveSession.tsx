@@ -460,7 +460,7 @@ export function LiveSession() {
 
         <div className="glass p-6 flex flex-col gap-4 text-sm">
           <div className="eyebrow flex items-center gap-2">
-            <ShieldCheck size={12} className="text-lime" /> How RTR listens
+            <ShieldCheck size={12} className="text-lime" /> How Cadence listens
           </div>
           <Point title="Transcript, not audio">Audio is transcribed on the fly and never stored. Only text reaches the server.</Point>
           <Point title="Live nudges">Discreet prompts when patterns drift — long talk without questions, no checks for understanding, rushing past wait time.</Point>

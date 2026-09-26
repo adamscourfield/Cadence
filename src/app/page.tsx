@@ -28,7 +28,7 @@ export default async function Dashboard() {
 
   return (
     <>
-      <PageHeader eyebrow="Overview" title={<>Your teaching, <span className="glow-text">read back to you.</span></>}>
+      <PageHeader eyebrow="Overview" title={<>Your teaching, <span className="glow-text">in rhythm.</span></>}>
         <Link href="/lessons/new" className="btn btn-ghost">
           <Upload size={16} /> Import transcript
         </Link>

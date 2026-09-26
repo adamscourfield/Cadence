@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const segments = await transcribeAudio(buffer);
     return Response.json({ segments });
   } catch (err) {
-    console.error("[rtr] transcription failed:", err);
+    console.error("[cadence] transcription failed:", err);
     return Response.json({ error: err instanceof Error ? err.message : "Transcription failed" }, { status: 502 });
   }
 }
