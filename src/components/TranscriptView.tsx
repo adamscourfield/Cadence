@@ -39,7 +39,7 @@ export function TranscriptView({ segments, questions }: { segments: TranscriptSe
           key={i}
           className="rounded px-1 -mx-0.5 text-text"
           style={{ background: `color-mix(in srgb, ${QTYPE_COLOR[q.type]} 22%, transparent)`, boxShadow: `inset 0 -2px 0 ${QTYPE_COLOR[q.type]}` }}
-          title={q.type}
+          title={q.target === "unspecified" ? q.type : `${q.type} · ${q.target}`}
         >
           {q.text}
         </mark>,

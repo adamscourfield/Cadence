@@ -12,6 +12,7 @@ import type {
 import {
   CFU,
   classifyQuestion,
+  detectQuestionTarget,
   GENERIC_PRAISE,
   isQuestion,
   MODELLING,
@@ -26,7 +27,7 @@ import {
 /** Assumed pause when a teacher keeps talking in the same segment straight after a question. */
 const SAME_SEGMENT_PAUSE = 0.5;
 
-export function extractQuestions(segments: TranscriptSegment[]): ClassifiedQuestion[] {
+export function extractQuestions(segments: TranscriptSegment[], roster?: string[]): ClassifiedQuestion[] {
   const out: ClassifiedQuestion[] = [];
   segments.forEach((seg, i) => {
     if (seg.speaker === "student") return;
@@ -41,7 +42,7 @@ export function extractQuestions(segments: TranscriptSegment[]): ClassifiedQuest
           ? Math.max(0, +(next.start - seg.end).toFixed(1))
           : null
         : SAME_SEGMENT_PAUSE;
-      out.push({ segmentId: seg.id, text: s, type: classifyQuestion(s), waitTime });
+      out.push({ segmentId: seg.id, text: s, type: classifyQuestion(s), target: detectQuestionTarget(s, roster), waitTime });
     });
   });
   return out;
@@ -73,6 +74,11 @@ export function computeMetrics(segments: TranscriptSegment[], questions: Classif
   const teacherSec = segments.filter((s) => s.speaker !== "student").reduce((a, s) => a + (s.end - s.start), 0);
   const substantive = questions.filter((q) => q.type !== "procedural");
   const open = substantive.filter((q) => q.type === "open" || q.type === "higher-order");
+  // Targeting is independent of cognitive demand — a bare nomination like "Amara?" is correctly
+  // typed "procedural" (it isn't itself a new open/closed/higher-order question) but is still a
+  // real cold call, so it must not be dropped by the same filter that excludes "can you all open
+  // your books?" from question-depth scoring.
+  const coldCalls = questions.filter((q) => q.target === "cold-call");
   const waits = substantive.map((q) => q.waitTime).filter((w): w is number => w !== null);
 
   return {
@@ -84,6 +90,7 @@ export function computeMetrics(segments: TranscriptSegment[], questions: Classif
     questionCount: questions.length,
     questionsPerTenMin: +((questions.length / durationSec) * 600).toFixed(1),
     openQuestionPct: substantive.length ? Math.round((open.length / substantive.length) * 100) : 0,
+    coldCallPct: questions.length ? Math.round((coldCalls.length / questions.length) * 100) : 0,
     meanWaitTime: waits.length ? +(waits.reduce((a, b) => a + b, 0) / waits.length).toFixed(1) : null,
     checksForUnderstanding: checks,
     genericPraise,
@@ -117,7 +124,7 @@ const NEXT_STEP: Record<DimensionId, string> = {
   questioning:
     "Plan three 'why/how do you know' questions in advance and follow each correct answer with 'How do you know?' or 'Can you prove it?'.",
   checking:
-    "Replace 'Any questions?' with a whole-class check: mini-whiteboards or a hinge question every 10–15 minutes, then adapt based on what you see.",
+    "Replace 'Any questions?' with a whole-class check: mini-whiteboards, a hinge question, or cold-calling a student who hasn't volunteered, every 10–15 minutes, then adapt based on what you see.",
   explanation:
     "State the success criteria up front and narrate one worked example out loud ('Watch me… I'm thinking…') before students attempt their own.",
   retrieval: "Open with a 3–5 question retrieval quiz covering last lesson, last week and last term.",
@@ -129,8 +136,8 @@ const NEXT_STEP: Record<DimensionId, string> = {
     "Build in an explicit 'we do' step before independent work, and cap uninterrupted teacher talk at ~10 minutes.",
 };
 
-export function heuristicAnalysis(segments: TranscriptSegment[]): LessonAnalysis {
-  const questions = extractQuestions(segments);
+export function heuristicAnalysis(segments: TranscriptSegment[], roster?: string[]): LessonAnalysis {
+  const questions = extractQuestions(segments, roster);
   const m = computeMetrics(segments, questions);
   const per10 = (n: number) => (n / Math.max(60, m.durationSec)) * 600;
   const per30 = (n: number) => (n / Math.max(60, m.durationSec)) * 1800;
@@ -142,6 +149,11 @@ export function heuristicAnalysis(segments: TranscriptSegment[]): LessonAnalysis
   if (m.questionsPerTenMin < 2) qScore = Math.min(qScore, 2);
 
   const cfu = matches(segments, CFU);
+  const coldCalls = questions.filter((q) => q.target === "cold-call");
+  // Cold-calling is itself a checking-for-understanding move (Lemov; Rosenshine Principle 6: check
+  // the responses of all students, not just volunteers) even when the teacher never says the
+  // phrase "cold call" out loud — the CFU regex alone would miss every one of these.
+  const checkingEvents = cfu.count + coldCalls.length;
   const model = matches(segments, MODELLING);
   const retr = matches(segments, RETRIEVAL);
   const prac = matches(segments, PRACTICE);
@@ -167,9 +179,11 @@ export function heuristicAnalysis(segments: TranscriptSegment[]): LessonAnalysis
     },
     {
       id: "checking",
-      score: band(per10(cfu.count), [0.3, 1, 2]),
-      rationale: `${cfu.count} whole-class checks detected (${per10(cfu.count).toFixed(1)}/10 min).`,
-      evidence: cfu.hits,
+      score: band(per10(checkingEvents), [0.3, 1, 2]),
+      rationale: coldCalls.length
+        ? `${cfu.count} whole-class checks and ${coldCalls.length} cold call${coldCalls.length === 1 ? "" : "s"} detected (${per10(checkingEvents).toFixed(1)}/10 min) — naming specific students samples beyond the confident volunteers.`
+        : `${cfu.count} whole-class checks detected (${per10(cfu.count).toFixed(1)}/10 min); no cold calls heard, so this is likely only sampling volunteers.`,
+      evidence: [...cfu.hits, ...coldCalls.slice(0, 2).map((q) => ({ segmentId: q.segmentId, quote: q.text }))].slice(0, 3),
     },
     {
       id: "explanation",

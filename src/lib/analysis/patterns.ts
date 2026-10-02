@@ -1,5 +1,5 @@
 // Pure text-pattern helpers shared by the live coach (browser) and the heuristic engine (server).
-import type { QuestionType } from "../types";
+import type { QuestionTarget, QuestionType } from "../types";
 
 const HIGHER_ORDER =
   /\b(why|justify|evaluate|compare|contrast|predict|what if|what would happen|how do you know|convince|prove|what's the difference|which is better|agree or disagree|do you agree|explain why|how could we|what evidence)\b/i;
@@ -32,6 +32,44 @@ export function classifyQuestion(q: string): QuestionType {
   if (RHETORICAL.test(s) && s.split(/\s+/).length < 9) return "rhetorical";
   if (OPEN.test(s)) return "open";
   return "closed";
+}
+
+// ---- Question targeting: cold-call vs. hands-up (Lemov / Rosenshine Principle 6) ----
+// Distinct from QuestionType above: type is about cognitive demand (open/closed/...), target is
+// about *who* the teacher put it to. A teacher can ask a brilliant open question and still only
+// ever direct it at volunteers — the rubric's "checking" dimension cites cold-calling specifically
+// because naming a student is what forces a response from someone who didn't put their hand up.
+const HANDS_UP = /\b(anyone|any volunteers|who can|who'd like|who knows|does anyone|hands up if|who thinks|who wants to)\b/i;
+// A capitalised word immediately before/after the question, excluding common sentence openers
+// that happen to be capitalised (start-of-sentence "So", "Right", politeness forms, etc).
+const NOT_A_NAME = new Set([
+  "I", "You", "We", "They", "So", "Now", "Right", "Okay", "Well", "What", "Why", "How", "Who",
+  "When", "Where", "Which", "Can", "Could", "Would", "Do", "Does", "Is", "Are", "The", "This",
+  "That", "Everyone", "Yes", "No", "Thank", "Thanks", "Miss", "Sir", "Mr", "Mrs", "Ms", "Good",
+]);
+const looksLikeName = (word: string) => /^[A-Z][a-z]+$/.test(word) && !NOT_A_NAME.has(word);
+
+/**
+ * `roster`, when available, is the deciding factor: ordinary capitalised words ("Anyone?", "Six?",
+ * a student's one-word answer echoed back) pass the bare `looksLikeName` shape check just as well
+ * as a real name does, so without something to check against, a bare one-word "sentence" is too
+ * unreliable to call a cold call — it's left "unspecified" rather than guessed. The comma-adjacent
+ * patterns ("Jamal, what did...", "...wrong, Priya?") are a strong enough shape on their own to
+ * keep even with no roster, since normal sentences don't address a name like that by accident.
+ */
+export function detectQuestionTarget(sentence: string, roster?: string[]): QuestionTarget {
+  const s = sentence.trim();
+  const rosterSet = roster ? new Set(roster.map((n) => n.toLowerCase())) : null;
+  const isKnownName = (word: string) => looksLikeName(word) && (!rosterSet || rosterSet.has(word.toLowerCase()));
+
+  const bare = s.replace(/\?+$/, "");
+  if (rosterSet && bare.split(/\s+/).length === 1 && isKnownName(bare)) return "cold-call"; // "Amara?"
+  const startMatch = s.match(/^([A-Z][a-z]+),\s/); // "Jamal, what did your partner say?"
+  if (startMatch && isKnownName(startMatch[1])) return "cold-call";
+  const endMatch = s.match(/,\s([A-Z][a-z]+)[?.!]*$/); // "Explain why B is wrong, Priya?"
+  if (endMatch && isKnownName(endMatch[1])) return "cold-call";
+  if (HANDS_UP.test(s)) return "hands-up";
+  return "unspecified";
 }
 
 export const CFU =

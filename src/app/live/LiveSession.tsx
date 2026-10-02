@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AlertTriangle, Clapperboard, Mic, MicOff, ShieldCheck, Square, Zap } from "lucide-react";
-import { CFU, classifyQuestion, isQuestion, splitSentences, THINK_TIME, wordCount } from "@/lib/analysis/patterns";
-import { QTYPE_COLOR } from "@/lib/qtype";
+import { CFU, classifyQuestion, detectQuestionTarget, isQuestion, splitSentences, THINK_TIME, wordCount } from "@/lib/analysis/patterns";
+import { QTYPE_COLOR, TARGET_LABEL } from "@/lib/qtype";
+import { getRoster } from "@/lib/roster";
 import { demoScript } from "@/lib/seed";
 import { formatClock } from "@/lib/transcript";
-import type { QuestionType, TranscriptSegment } from "@/lib/types";
+import type { QuestionTarget, QuestionType, TranscriptSegment } from "@/lib/types";
 import { PageHeader } from "@/components/ui";
 
 // ---- Minimal Web Speech API typings (not in lib.dom for all TS versions) ----
@@ -48,6 +49,7 @@ interface LiveQuestion {
   segId: string;
   text: string;
   type: QuestionType;
+  target: QuestionTarget;
   askedAt: number;
   wait: number | null;
 }
@@ -115,6 +117,7 @@ export function LiveSession() {
   }, []);
 
   // ---------- Derived live metrics ----------
+  const roster = useMemo(() => getRoster(meta.yearGroup), [meta.yearGroup]);
   const live = useMemo(() => {
     const questions: LiveQuestion[] = [];
     let lastCfu = 0;
@@ -136,6 +139,7 @@ export function LiveSession() {
           segId: s.id,
           text: sent,
           type: classifyQuestion(sent),
+          target: detectQuestionTarget(sent, roster),
           askedAt: s.end,
           wait: isLast ? (next ? Math.max(0, next.start - s.end) : null) : 0.5,
         });
@@ -143,12 +147,14 @@ export function LiveSession() {
     });
     const substantive = questions.filter((q) => q.type !== "procedural");
     const open = substantive.filter((q) => q.type === "open" || q.type === "higher-order").length;
+    const coldCalls = substantive.filter((q) => q.target === "cold-call").length;
     const waits = substantive.map((q) => q.wait).filter((w): w is number => w !== null);
     const lastQ = substantive[substantive.length - 1];
     return {
       questions,
       substantive,
       openPct: substantive.length ? Math.round((open / substantive.length) * 100) : 0,
+      coldCallPct: substantive.length ? Math.round((coldCalls / substantive.length) * 100) : 0,
       meanWait: waits.length ? waits.reduce((a, b) => a + b, 0) / waits.length : null,
       lastWait: lastQ?.wait ?? null,
       sinceQuestion: clock - (lastQ?.askedAt ?? 0),
@@ -157,7 +163,7 @@ export function LiveSession() {
       words,
       thinkCues,
     };
-  }, [segments, clock]);
+  }, [segments, clock, roster]);
 
   // ---------- Real-time nudges ----------
   useEffect(() => {
@@ -178,6 +184,13 @@ export function LiveSession() {
     if (clock > 90 && live.wpm > 185) fire("pace", "warn", `Pace is ${live.wpm} wpm. Slow down for the key idea.`);
     const lastQ = live.substantive[live.substantive.length - 1];
     if (lastQ?.type === "higher-order" && (lastQ.wait ?? 0) >= 3) fire(`ho-${lastQ.segId}`, "good", "Great — a reasoning question with real thinking time.");
+    const last6 = live.substantive.slice(-6);
+    if (last6.length === 6 && last6.every((q) => q.target !== "cold-call")) {
+      fire("coldcall", "warn", "Six questions to the room, none to a named student. Try a cold call to check someone who hasn't volunteered.");
+    }
+    if (lastQ?.target === "cold-call" && live.substantive.slice(-4, -1).every((q) => q.target !== "cold-call")) {
+      fire(`cc-${lastQ.segId}`, "good", "Good cold call — that samples beyond the usual hands.");
+    }
   }, [clock, live, phase]);
 
   useEffect(() => {
@@ -600,6 +613,7 @@ export function LiveSession() {
                     {qs.map((q, i) => (
                       <span key={i} className="chip ml-2 align-middle" style={{ color: QTYPE_COLOR[q.type], borderColor: "currentColor" }}>
                         {q.type}
+                        {TARGET_LABEL[q.target] && ` · ${TARGET_LABEL[q.target]}`}
                         {q.wait !== null && ` · ${q.wait.toFixed(1)}s`}
                       </span>
                     ))}
@@ -620,6 +634,7 @@ export function LiveSession() {
       <aside className="flex flex-col gap-4">
         <div className="glass p-5 grid grid-cols-2 gap-5">
           <Gauge label="Questions" value={`${live.substantive.length}`} sub={`${live.openPct}% open`} color="var(--cyan)" />
+          <Gauge label="Cold calls" value={`${live.coldCallPct}%`} sub="named a student" color={live.substantive.length >= 6 && live.coldCallPct === 0 ? "var(--amber)" : undefined} />
           <Gauge
             label="Wait time"
             value={live.meanWait === null ? "—" : `${live.meanWait.toFixed(1)}s`}

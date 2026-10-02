@@ -2,6 +2,7 @@
 // Clearly labelled as demo data in the UI; deterministic via a seeded RNG.
 import { heuristicAnalysis } from "./analysis/heuristic";
 import { detectBehaviourEvents } from "./behaviour";
+import { getRoster } from "./roster";
 import { buildAssessment } from "./triangulate";
 import type { Lesson, Speaker, TranscriptSegment } from "./types";
 
@@ -127,7 +128,8 @@ export function seedLessons(): Lesson[] {
     // Quality drifts upward over time, as it would with coaching.
     const q = Math.min(0.95, Math.max(0.05, 0.25 + (i / count) * 0.55 + (r() - 0.5) * 0.4));
     const segments = buildSegments(composeLesson(q, r));
-    const analysis = heuristicAnalysis(segments);
+    const yearGroup = YEARS[i % YEARS.length];
+    const analysis = heuristicAnalysis(segments, getRoster(yearGroup));
     const [subject, title] = TOPICS[i];
     const date = new Date(now - (count - i) * 3.5 * 86400000).toISOString();
     analysis.analysedAt = date;
@@ -145,14 +147,14 @@ export function seedLessons(): Lesson[] {
       id: `demo-${i + 1}`,
       title,
       subject,
-      yearGroup: YEARS[i % YEARS.length],
+      yearGroup,
       teacher: TEACHERS[i % TEACHERS.length],
       date,
       source: "demo",
       segments,
       analysis,
       assessment: hasAssessment ? { ...buildAssessment("exit-ticket", results), uploadedAt: date } : null,
-      behaviourEvents: detectBehaviourEvents(segments, YEARS[i % YEARS.length]),
+      behaviourEvents: detectBehaviourEvents(segments, yearGroup),
     });
   }
   return lessons.reverse();

@@ -23,6 +23,7 @@ const AnalysisSchema = z.object({
       segmentId: z.string(),
       text: z.string(),
       type: z.enum(["closed", "open", "higher-order", "procedural", "rhetorical"]),
+      target: z.enum(["cold-call", "hands-up", "unspecified"]),
     }),
   ),
   strengths: z.array(z.string()),
@@ -45,7 +46,14 @@ ${RUBRIC.map(
     `## ${d.id} — ${d.name}\nWhy it matters: ${d.evidence}\n${d.levels.map((l, i) => `  ${i + 1}. ${l}`).join("\n")}`,
 ).join("\n\n")}
 
-Also list every question the teacher asked, classified as closed, open, higher-order, procedural (classroom management) or rhetorical.
+Also list every question the teacher asked, classified two ways:
+- type: closed, open, higher-order, procedural (classroom management) or rhetorical — the cognitive demand of the question.
+- target: who it was actually put to. This is independent of type and matters because a great open question still only checks the class if it reaches more than the confident volunteers:
+  - "cold-call" — directed at a specific named student ("Jamal, what did your partner say?", "Explain why B is wrong, Priya.", or a bare nomination like "Amara?"). Per Doug Lemov (Teach Like a Champion), cold-calling is what forces a response from students who wouldn't otherwise raise a hand.
+  - "hands-up" — explicitly opened to volunteers ("who can tell me...", "does anyone know...", "any volunteers?").
+  - "unspecified" — put to the whole class with no explicit targeting signal either way.
+  Per Rosenshine (2012) Principle 6, checking the responses of all students — not just those who put their hands up — is what separates real checking for understanding from the illusion of it. When scoring the "checking" dimension, weigh cold-calling as a genuine checking-for-understanding mechanism even if the teacher never says the words "cold call" out loud, and note in the rationale when questioning relies heavily on volunteers.
+
 Return 2–3 strengths and 2–3 next steps, and a 2–3 sentence summary.`;
 
 export function claudeAvailable(): boolean {

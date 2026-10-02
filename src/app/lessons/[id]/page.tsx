@@ -11,7 +11,7 @@ import { BehaviourPanel } from "@/components/BehaviourPanel";
 import { ReportActions } from "@/components/ReportActions";
 import { TranscriptView } from "@/components/TranscriptView";
 import { LessonTimeline } from "@/components/LessonTimeline";
-import { QTYPE_COLOR } from "@/lib/qtype";
+import { QTYPE_COLOR, TARGET_LABEL } from "@/lib/qtype";
 import { LevelBar, ScoreRing, formatDate, formatDuration, levelColor } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +62,7 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
                 <Metric label="Duration" value={formatDuration(a.metrics.durationSec)} />
                 <Metric label="Questions" value={`${a.metrics.questionCount}`} sub={`${a.metrics.questionsPerTenMin}/10 min`} />
                 <Metric label="Open / higher-order" value={`${a.metrics.openQuestionPct}%`} />
+                <Metric label="Cold calls" value={`${a.metrics.coldCallPct}%`} sub="named a specific student" />
                 <Metric label="Mean wait time" value={a.metrics.meanWaitTime === null ? "—" : `${a.metrics.meanWaitTime}s`} sub="target ≥ 3s" />
                 <Metric label="Speaking pace" value={`${a.metrics.wordsPerMinute} wpm`} />
                 <Metric
@@ -160,7 +161,17 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
                 return (
                   <a key={i} href={`#seg-${q.segmentId}`} className="grid grid-cols-[44px_1fr] sm:grid-cols-[52px_1fr_110px_120px] items-center gap-3 px-4 py-3 hover:bg-panel-strong">
                     <span className="font-mono text-[11px] text-dim">{seg ? formatClock(seg.start) : ""}</span>
-                    <span className="text-sm min-w-0">{q.text}</span>
+                    <span className="text-sm min-w-0">
+                      {q.text}
+                      {TARGET_LABEL[q.target] && (
+                        <span
+                          className="chip ml-2 align-middle"
+                          style={q.target === "cold-call" ? { color: "var(--cyan)", borderColor: "currentColor" } : undefined}
+                        >
+                          {TARGET_LABEL[q.target]}
+                        </span>
+                      )}
+                    </span>
                     <span className="hidden sm:inline-flex">
                       <span className="chip" style={{ color: QTYPE_COLOR[q.type], borderColor: "currentColor" }}>
                         {q.type}

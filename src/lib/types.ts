@@ -11,10 +11,20 @@ export interface TranscriptSegment {
 
 export type QuestionType = "closed" | "open" | "higher-order" | "procedural" | "rhetorical";
 
+/**
+ * Who the question was actually aimed at — orthogonal to QuestionType (which captures cognitive
+ * demand). "cold-call" names a specific student rather than opening the floor; per Lemov (Teach
+ * Like a Champion) this is what makes a check-for-understanding sample the whole class rather
+ * than just confident volunteers, which is Rosenshine's Principle 6 ("check the responses of all
+ * students, not just those who initially raise their hands").
+ */
+export type QuestionTarget = "cold-call" | "hands-up" | "unspecified";
+
 export interface ClassifiedQuestion {
   segmentId: string;
   text: string;
   type: QuestionType;
+  target: QuestionTarget;
   /** Seconds between the question ending and the next utterance. null when unknowable. */
   waitTime: number | null;
 }
@@ -46,6 +56,8 @@ export interface LessonMetrics {
   questionCount: number;
   questionsPerTenMin: number;
   openQuestionPct: number;
+  /** % of substantive questions aimed at a named student rather than the whole class/volunteers. */
+  coldCallPct: number;
   meanWaitTime: number | null;
   checksForUnderstanding: number;
   genericPraise: number;
