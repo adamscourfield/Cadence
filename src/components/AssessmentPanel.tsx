@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { FileUp, X } from "lucide-react";
-import { triangulate } from "@/lib/triangulate";
+import { FileUp, Lightbulb, X } from "lucide-react";
+import { classSlug, triangulate } from "@/lib/triangulate";
 import type { Assessment } from "@/lib/types";
 import { scoreColor } from "./ui";
 
@@ -18,14 +19,17 @@ export function AssessmentPanel({
   lessonId,
   overall,
   assessment,
+  yearGroup,
 }: {
   lessonId: string;
   overall: number | null;
   assessment: Assessment | null;
+  yearGroup: string;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [csv, setCsv] = useState("");
+  const [misconceptions, setMisconceptions] = useState("");
   const [kind, setKind] = useState<Assessment["kind"]>("exit-ticket");
   const [defaultMax, setDefaultMax] = useState(10);
   const [threshold, setThreshold] = useState(70);
@@ -38,7 +42,7 @@ export function AssessmentPanel({
     const res = await fetch(`/api/lessons/${lessonId}/assessment`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind, csv, defaultMax, masteryThreshold: threshold }),
+      body: JSON.stringify({ kind, csv, defaultMax, masteryThreshold: threshold, misconceptions }),
     });
     setBusy(false);
     if (!res.ok) {
@@ -46,6 +50,7 @@ export function AssessmentPanel({
       return;
     }
     setCsv("");
+    setMisconceptions("");
     router.refresh();
   }
 
@@ -62,6 +67,7 @@ export function AssessmentPanel({
     const struggling = assessment.results.filter((r) => (r.score / r.max) * 100 < assessment.masteryThreshold);
 
     return (
+      <>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
         <div className="glass p-5">
           <div className="flex items-center justify-between">
@@ -134,6 +140,33 @@ export function AssessmentPanel({
           </div>
         )}
       </div>
+
+      <div className="glass p-5 mt-4">
+        <div className="flex items-center justify-between">
+          <div className="eyebrow flex items-center gap-2">
+            <Lightbulb size={12} className="text-amber" /> Misconceptions
+          </div>
+          <Link href={`/misconceptions#${classSlug(yearGroup)}`} className="text-xs text-cyan hover:underline">
+            See all for {yearGroup || "this class"} →
+          </Link>
+        </div>
+        {assessment.misconceptions.length ? (
+          <ul className="mt-3 flex flex-col gap-2">
+            {assessment.misconceptions.map((m) => (
+              <li key={m.id} className="flex items-start gap-2 text-sm">
+                <span className="size-1.5 rounded-full bg-amber mt-2 shrink-0" />
+                <span>
+                  {m.text}
+                  {m.studentCount !== undefined && <span className="text-dim"> · {m.studentCount} students</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-muted">None noted for this exit ticket yet. Add them below next time you mark one.</p>
+        )}
+      </div>
+      </>
     );
   }
 
@@ -166,6 +199,16 @@ export function AssessmentPanel({
               Use sample
             </button>
           </div>
+          <label className="block mt-4 text-xs text-muted">
+            Misconceptions seen (optional, one per line)
+            <textarea
+              className="field font-mono text-xs mt-1"
+              rows={3}
+              placeholder={"Added numerators and denominators separately x7\nUsed a common denominator but forgot to scale the numerator"}
+              value={misconceptions}
+              onChange={(e) => setMisconceptions(e.target.value)}
+            />
+          </label>
         </div>
         <div className="flex flex-col gap-3">
           <label className="text-xs text-muted">
