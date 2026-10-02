@@ -210,7 +210,7 @@ export default async function LessonReport({ params }: PageProps<"/lessons/[id]"
           <Sparkles size={18} className="text-pink" /> Triangulate with outcomes
         </h2>
         <p className="text-sm text-muted mb-4">What was said, checked against what students could do.</p>
-        <AssessmentPanel lessonId={lesson.id} overall={a?.overall ?? null} assessment={lesson.assessment} />
+        <AssessmentPanel lessonId={lesson.id} overall={a?.overall ?? null} assessment={lesson.assessment} yearGroup={lesson.yearGroup} />
       </section>
 
       <section className="mt-8">

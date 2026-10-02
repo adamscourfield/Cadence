@@ -3,7 +3,7 @@
 import { heuristicAnalysis } from "./analysis/heuristic";
 import { detectBehaviourEvents } from "./behaviour";
 import { getRoster } from "./roster";
-import { buildAssessment } from "./triangulate";
+import { buildAssessment, parseMisconceptions } from "./triangulate";
 import type { Lesson, Speaker, TranscriptSegment } from "./types";
 
 function rng(seed: number) {
@@ -92,6 +92,21 @@ const TOPICS: [string, string][] = [
   ["Science", "Balancing chemical equations"],
   ["History", "The Industrial Revolution and public health"],
 ];
+
+// Keyed by lesson title — what a teacher might actually jot down while marking the exit ticket.
+const MISCONCEPTIONS: Record<string, string[]> = {
+  "Adding fractions with unlike denominators": ["Added numerators and denominators separately x7", "Used a common denominator but forgot to scale the numerator x3"],
+  "Solving two-step equations": ["Applied the operation to one side only x5", "Did the operations in the wrong order x4"],
+  "Particle model of states of matter": ["Thinks particles themselves expand when heated, rather than spreading out x6"],
+  "Analysing language in Macbeth Act 1": ["Identifies a technique but doesn't link it to effect x8"],
+  "Causes of the First World War": ["Treats the assassination as the sole cause rather than a trigger x6"],
+  "Area of compound shapes": ["Adds all side lengths instead of splitting into rectangles x5"],
+  "Photosynthesis and limiting factors": ["Thinks plants only photosynthesise and don't respire x4"],
+  "Plate boundaries and hazards": ["Confuses convergent and divergent boundary diagrams x5"],
+  "Ratio and proportion problems": ["Treats the ratio as a fraction of one quantity rather than the whole x9"],
+  "Balancing chemical equations": ["Changes a subscript instead of adding a coefficient x6"],
+  "The Industrial Revolution and public health": ["Attributes improved health solely to medicine, not sanitation x3"],
+};
 const TEACHERS = ["A. Scourfield", "R. Okafor", "L. Chen", "M. Patel"];
 const YEARS = ["Year 7", "Year 8", "Year 9", "Year 10"];
 const NAMES = ["Amara", "Jamal", "Priya", "Tom", "Sofia", "Leo", "Maya", "Ethan", "Zara", "Noah", "Ivy", "Kai", "Ruby", "Omar", "Ella", "Finn", "Aisha", "Sam", "Grace", "Theo", "Hana", "Max", "Lily", "Ravi", "Chloe", "Ben"];
@@ -153,7 +168,9 @@ export function seedLessons(): Lesson[] {
       source: "demo",
       segments,
       analysis,
-      assessment: hasAssessment ? { ...buildAssessment("exit-ticket", results), uploadedAt: date } : null,
+      assessment: hasAssessment
+        ? { ...buildAssessment("exit-ticket", results, undefined, parseMisconceptions((MISCONCEPTIONS[title] ?? []).join("\n"))), uploadedAt: date }
+        : null,
       behaviourEvents: detectBehaviourEvents(segments, yearGroup),
     });
   }

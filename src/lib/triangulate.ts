@@ -1,5 +1,5 @@
 import { RUBRIC } from "./rubric";
-import type { Assessment, DimensionId, LessonSummary, StudentResult } from "./types";
+import type { Assessment, DimensionId, LessonSummary, Misconception, StudentResult } from "./types";
 
 export const DEFAULT_MASTERY = 70;
 
@@ -23,10 +23,31 @@ export function parseResults(raw: string, defaultMax: number): StudentResult[] {
   return results;
 }
 
+/**
+ * Parse free-text misconception notes, one per line — what a teacher jots down while marking.
+ * A trailing count ("x6", "(6 students)", "- 6 students") is read off the end; otherwise the
+ * whole line is kept as the description with no count.
+ */
+export function parseMisconceptions(raw: string): Misconception[] {
+  return raw
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line, i) => {
+      const m = line.match(/^(.*?)[\s(]*(?:x\s?(\d+)|(\d+)\s*students?)\)?\s*$/i);
+      if (m && m[1].trim()) {
+        const count = parseInt(m[2] ?? m[3], 10);
+        return { id: `mc${i + 1}`, text: m[1].trim().replace(/[-–—,]\s*$/, ""), studentCount: Number.isFinite(count) ? count : undefined };
+      }
+      return { id: `mc${i + 1}`, text: line };
+    });
+}
+
 export function buildAssessment(
   kind: Assessment["kind"],
   results: StudentResult[],
   masteryThreshold = DEFAULT_MASTERY,
+  misconceptions: Misconception[] = [],
 ): Assessment {
   const pcts = results.map((r) => (r.score / r.max) * 100);
   return {
@@ -36,6 +57,7 @@ export function buildAssessment(
     meanPct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0,
     masteryPct: pcts.length ? Math.round((pcts.filter((p) => p >= masteryThreshold).length / pcts.length) * 100) : 0,
     masteryThreshold,
+    misconceptions,
   };
 }
 
@@ -120,4 +142,52 @@ export function outcomeDrivers(lessons: LessonSummary[]): Driver[] {
     metric("wpm", "Speaking pace (wpm)", (l) => l.analysis!.metrics.wordsPerMinute),
     metric("teacherTalk", "Teacher talk %", (l) => l.analysis!.metrics.teacherTalkPct),
   ].sort((a, b) => Math.abs(b.r ?? 0) - Math.abs(a.r ?? 0));
+}
+
+export interface ClassMisconception {
+  text: string;
+  /** Sums each lesson's noted student count, or counts the lesson itself once when no count was given. */
+  totalStudentCount: number;
+  /** How many different lessons surfaced this. */
+  occurrences: number;
+  lessons: { id: string; title: string; date: string }[];
+}
+
+/** Slug used to link from a lesson's exit ticket to its class's section on the Misconceptions page. */
+export function classSlug(yearGroup: string): string {
+  return (yearGroup || "unassigned").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "unassigned";
+}
+
+/** Group misconceptions by class, merging identical (case/whitespace-insensitive) text across lessons. */
+export function misconceptionsByClass(lessons: LessonSummary[]): { yearGroup: string; items: ClassMisconception[] }[] {
+  const byClass = new Map<string, Map<string, ClassMisconception>>();
+  for (const l of lessons) {
+    const mcs = l.assessment?.misconceptions;
+    if (!mcs?.length) continue;
+    const cls = l.yearGroup || "Unassigned";
+    const items = byClass.get(cls) ?? new Map<string, ClassMisconception>();
+    byClass.set(cls, items);
+    for (const mc of mcs) {
+      const key = mc.text.toLowerCase().trim();
+      const existing = items.get(key);
+      if (existing) {
+        existing.totalStudentCount += mc.studentCount ?? 1;
+        existing.occurrences += 1;
+        existing.lessons.push({ id: l.id, title: l.title, date: l.date });
+      } else {
+        items.set(key, {
+          text: mc.text,
+          totalStudentCount: mc.studentCount ?? 1,
+          occurrences: 1,
+          lessons: [{ id: l.id, title: l.title, date: l.date }],
+        });
+      }
+    }
+  }
+  return [...byClass.entries()]
+    .map(([yearGroup, items]) => ({
+      yearGroup,
+      items: [...items.values()].sort((a, b) => b.totalStudentCount - a.totalStudentCount || b.occurrences - a.occurrences),
+    }))
+    .sort((a, b) => a.yearGroup.localeCompare(b.yearGroup));
 }

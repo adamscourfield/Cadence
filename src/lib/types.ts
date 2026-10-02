@@ -83,6 +83,13 @@ export interface StudentResult {
   max: number;
 }
 
+export interface Misconception {
+  id: string;
+  text: string;
+  /** How many students' answers reflected this, when the teacher noted a count. */
+  studentCount?: number;
+}
+
 export interface Assessment {
   kind: "exit-ticket" | "worksheet" | "assessment";
   uploadedAt: string;
@@ -92,6 +99,8 @@ export interface Assessment {
   /** % of students at or above the mastery threshold. */
   masteryPct: number;
   masteryThreshold: number;
+  /** Wrong-answer patterns the teacher noted while marking. Empty until entered. */
+  misconceptions: Misconception[];
 }
 
 export type BehaviourType = "merit" | "demerit" | "detention" | "room-removal";

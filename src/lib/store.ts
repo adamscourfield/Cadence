@@ -19,7 +19,10 @@ async function read(): Promise<Db> {
     const db = JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ DB_PATH, "utf8")) as Db;
     // Backfill fields added after a db file was first written, so an existing local db.json
     // never crashes a fresh deploy of the code.
-    for (const lesson of db.lessons) lesson.behaviourEvents ??= [];
+    for (const lesson of db.lessons) {
+      lesson.behaviourEvents ??= [];
+      if (lesson.assessment) lesson.assessment.misconceptions ??= [];
+    }
     return db;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
