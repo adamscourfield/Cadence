@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --panel: #ffffff;
+  --panel-strong: #ffffff;
+  --well: #f2f4f6;
+  --track: #eceef0;
+  --line: #e4e7eb;
+  --line-strong: #cbd0d6;
+  --text: #191c1e;
+  --muted: #55565c;
+  --dim: #85868c;
+
+  /* Primary action colour — near-black, matching Anaxi (the app this lives inside). */
+  --ink: #000000;
+  --ink-2: #131b2e;
+  --ink-hover: #1a1a1a;
+  --ink-active: #333333;
+
+  /* Data colour — reserved for charts, rubric levels and question types, not chrome. */
+  --cyan: #6366f1;
+  --violet: #7c3aed;
+  --pink: #fe9f9f;
+  --lime: #059669;
+  --amber: #b45309;
+  --red: #ba1a1a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-well: var(--well);
+  --color-track: var(--track);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-ink: var(--ink);
+  --color-cyan: var(--cyan);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-lime: var(--lime);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@layer components {
+  .glass {
+    background: var(--panel-strong);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .glow-text {
+    color: var(--cyan);
+  }
+  .eyebrow {
+    font-family: var(--font-geist-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+    white-space: nowrap;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .btn-primary {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--ink), var(--ink-2));
+    box-shadow: none;
+  }
+  .btn-primary:hover {
+    opacity: 0.94;
+  }
+  .btn-ghost {
+    color: var(--text);
+    background: var(--panel-strong);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover {
+    border-color: var(--line-strong);
+    background: var(--well);
+  }
+  .field {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea.field {
+    height: auto;
+    padding: 12px 14px;
+    line-height: 1.5;
+  }
+  .field:focus {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--red);
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+::selection {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .pulse-ring::after { animation: none; }
+}
