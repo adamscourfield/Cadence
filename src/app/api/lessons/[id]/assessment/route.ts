@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { getLesson, updateLesson } from "@/lib/store";
-import { buildAssessment, DEFAULT_MASTERY, parseResults } from "@/lib/triangulate";
+import { buildAssessment, DEFAULT_MASTERY, parseMisconceptions, parseResults } from "@/lib/triangulate";
 
 const Body = z.object({
   kind: z.enum(["exit-ticket", "worksheet", "assessment"]),
   csv: z.string().min(1).max(500_000),
   defaultMax: z.number().positive().default(10),
   masteryThreshold: z.number().min(1).max(100).default(DEFAULT_MASTERY),
+  misconceptions: z.string().max(20_000).optional().default(""),
 });
 
 export async function POST(req: Request, ctx: RouteContext<"/api/lessons/[id]/assessment">) {
@@ -17,7 +18,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lessons/[id]/as
 
   const results = parseResults(parsed.data.csv, parsed.data.defaultMax);
   if (!results.length) return Response.json({ error: "No rows found. Use: student, score[, max]" }, { status: 400 });
-  const assessment = buildAssessment(parsed.data.kind, results, parsed.data.masteryThreshold);
+  const misconceptions = parseMisconceptions(parsed.data.misconceptions);
+  const assessment = buildAssessment(parsed.data.kind, results, parsed.data.masteryThreshold, misconceptions);
   await updateLesson(id, { assessment });
   return Response.json(assessment);
 }

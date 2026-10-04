@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, BookOpenCheck, LayoutGrid, LineChart, Mic, Radio, Upload } from "lucide-react";
+import { Award, BookOpenCheck, LayoutGrid, Lightbulb, LineChart, Mic, Radio, Upload } from "lucide-react";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -11,12 +11,13 @@ const NAV = [
   { href: "/lessons", label: "Lessons", icon: Radio },
   { href: "/lessons/new", label: "Import", icon: Upload },
   { href: "/behaviour", label: "Behaviour", icon: Award },
+  { href: "/misconceptions", label: "Misconceptions", icon: Lightbulb },
   { href: "/insights", label: "Insights", icon: LineChart },
   { href: "/rubric", label: "Rubric", icon: BookOpenCheck },
 ];
 
 // The mobile tab bar only has room for the five most-used destinations.
-const MOBILE_NAV_EXCLUDE = new Set(["/lessons/new", "/behaviour"]);
+const MOBILE_NAV_EXCLUDE = new Set(["/lessons/new", "/behaviour", "/misconceptions"]);
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
