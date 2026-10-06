@@ -1,237 +1,325 @@
 "use client";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { FileUp, Lightbulb, X } from "lucide-react";
-import { classSlug, triangulate } from "@/lib/triangulate";
+import { FileUp, X } from "lucide-react";
+import { triangulate } from "@/lib/triangulate";
 import type { Assessment } from "@/lib/types";
-import { scoreColor } from "./ui";
-
-const SAMPLE = `student,score,max
-Amara,4,5
-Jamal,5,5
-Priya,3,5
-Tom,2,5
-Sofia,4,5`;
-
+import type { MisconceptionGroup } from "@/lib/misconceptions";
+import { misconceptionGroupId } from "@/lib/misconceptions";
+import { MisconceptionDetail } from "./MisconceptionDetail";
+import { MisconceptionEvidenceEditor } from "./MisconceptionEvidenceEditor";
+import { useFeedback } from "./Feedback";
+const SAMPLE = `student,score,max\nAmara,8,10\nJamal,9,10\nPriya,6,10\nTom,4,10\nSofia,7,10`;
 export function AssessmentPanel({
   lessonId,
   overall,
   assessment,
   yearGroup,
+  groups = [],
 }: {
   lessonId: string;
   overall: number | null;
   assessment: Assessment | null;
   yearGroup: string;
+  groups?: MisconceptionGroup[];
 }) {
-  const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [csv, setCsv] = useState("");
-  const [misconceptions, setMisconceptions] = useState("");
-  const [kind, setKind] = useState<Assessment["kind"]>("exit-ticket");
-  const [defaultMax, setDefaultMax] = useState(10);
-  const [threshold, setThreshold] = useState(70);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const router = useRouter(),
+    notify = useFeedback(),
+    fileRef = useRef<HTMLInputElement>(null);
+  const [csv, setCsv] = useState(""),
+    [notes, setNotes] = useState(""),
+    [kind, setKind] = useState<Assessment["kind"]>("exit-ticket"),
+    [maximum, setMaximum] = useState(10),
+    [threshold, setThreshold] = useState(70),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const classHref = `/misconceptions?class=${encodeURIComponent(yearGroup || "Unassigned")}`;
   async function submit() {
     setBusy(true);
-    setError(null);
-    const res = await fetch(`/api/lessons/${lessonId}/assessment`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind, csv, defaultMax, masteryThreshold: threshold, misconceptions }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error ?? "Upload failed");
-      return;
+    setError("");
+    try {
+      const res = await fetch(`/api/lessons/${lessonId}/assessment`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          kind,
+          csv,
+          defaultMax: maximum,
+          masteryThreshold: threshold,
+          misconceptions: notes,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Upload failed");
+      notify("Results saved — outcomes updated");
+      setCsv("");
+      setNotes("");
+      router.refresh();
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Connection failed. Your input is still here.",
+      );
+    } finally {
+      setBusy(false);
     }
-    setCsv("");
-    setMisconceptions("");
-    router.refresh();
   }
-
   async function clear() {
-    await fetch(`/api/lessons/${lessonId}/assessment`, { method: "DELETE" });
-    router.refresh();
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/lessons/${lessonId}/assessment`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Could not remove results");
+      notify("Results removed — ready to upload again");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Connection failed");
+    } finally {
+      setBusy(false);
+    }
   }
-
-  if (assessment) {
-    const verdict = overall !== null ? triangulate(overall, assessment.masteryPct) : null;
-    const pcts = assessment.results.map((r) => (r.score / r.max) * 100);
-    const bins = [0, 20, 40, 60, 80].map((lo) => pcts.filter((p) => p >= lo && (lo === 80 ? p <= 100 : p < lo + 20)).length);
-    const maxBin = Math.max(1, ...bins);
-    const struggling = assessment.results.filter((r) => (r.score / r.max) * 100 < assessment.masteryThreshold);
-
-    return (
-      <>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
-        <div className="glass p-5">
-          <div className="flex items-center justify-between">
-            <div className="eyebrow">{assessment.kind.replace("-", " ")} · {assessment.results.length} students</div>
-            <button onClick={clear} className="text-dim hover:text-text" aria-label="Remove results">
-              <X size={14} />
-            </button>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-4xl font-semibold tabular-nums" style={{ color: "var(--pink)" }}>
-                {assessment.masteryPct}%
-              </div>
-              <div className="text-xs text-muted mt-1">reached mastery (≥{assessment.masteryThreshold}%)</div>
-            </div>
-            <div>
-              <div className="text-4xl font-semibold tabular-nums">{assessment.meanPct}%</div>
-              <div className="text-xs text-muted mt-1">mean score</div>
-            </div>
-          </div>
-          <div className="mt-6 flex items-end gap-2 h-24">
-            {bins.map((b, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t-md"
-                  style={{
-                    height: `${(b / maxBin) * 100}%`,
-                    minHeight: b ? 4 : 0,
-                    background: i * 20 >= assessment.masteryThreshold - 10 ? "var(--pink)" : "color-mix(in srgb, var(--pink) 35%, transparent)",
-                  }}
-                />
-                <span className="font-mono text-[10px] text-dim">{i * 20}+</span>
-              </div>
-            ))}
-          </div>
-          {struggling.length > 0 && (
-            <div className="mt-5">
-              <div className="eyebrow !text-[10px]">Below threshold</div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {struggling.map((r) => (
-                  <span key={r.student} className="chip">
-                    {r.student} · {r.score}/{r.max}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {verdict && overall !== null && (
-          <div className="glass p-5 relative overflow-hidden">
-            <div className="eyebrow">Triangulation</div>
-            <div className="mt-3 text-2xl font-semibold tracking-tight">{verdict.headline}</div>
-            <p className="mt-2 text-sm text-muted leading-relaxed">{verdict.detail}</p>
-            <div className="mt-6 grid grid-cols-[auto_1fr_auto] items-center gap-3 text-xs">
-              <span className="text-muted w-20">Delivery</span>
-              <div className="h-2 rounded-full bg-track overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${overall}%`, background: scoreColor(overall) }} />
-              </div>
-              <span className="tabular-nums w-8 text-right">{overall}</span>
-              <span className="text-muted w-20">Mastery</span>
-              <div className="h-2 rounded-full bg-track overflow-hidden">
-                <div className="h-full rounded-full bg-pink" style={{ width: `${assessment.masteryPct}%` }} />
-              </div>
-              <span className="tabular-nums w-8 text-right">{assessment.masteryPct}</span>
-            </div>
-            <p className="mt-6 text-[11px] text-dim leading-relaxed">
-              One lesson is one data point. Treat this as a prompt for reflection, not a verdict — patterns across many lessons are what matter (see Insights).
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="glass p-5 mt-4">
-        <div className="flex items-center justify-between">
-          <div className="eyebrow flex items-center gap-2">
-            <Lightbulb size={12} className="text-amber" /> Misconceptions
-          </div>
-          <Link href={`/misconceptions#${classSlug(yearGroup)}`} className="text-xs text-cyan hover:underline">
-            See all for {yearGroup || "this class"} →
-          </Link>
-        </div>
-        {assessment.misconceptions.length ? (
-          <ul className="mt-3 flex flex-col gap-2">
-            {assessment.misconceptions.map((m) => (
-              <li key={m.id} className="flex items-start gap-2 text-sm">
-                <span className="size-1.5 rounded-full bg-amber mt-2 shrink-0" />
-                <span>
-                  {m.text}
-                  {m.studentCount !== undefined && <span className="text-dim"> · {m.studentCount} students</span>}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-sm text-muted">None noted for this exit ticket yet. Add them below next time you mark one.</p>
-        )}
-      </div>
-      </>
-    );
-  }
-
+  const verdict =
+    assessment && overall !== null
+      ? triangulate(overall, assessment.masteryPct)
+      : null;
+  const pcts = assessment?.results.map((r) => (r.score / r.max) * 100) ?? [];
+  const bins = [0, 20, 40, 60, 80].map(
+      (lo) =>
+        pcts.filter((p) => p >= lo && (lo === 80 ? p <= 100 : p < lo + 20))
+          .length,
+    ),
+    maxBin = Math.max(1, ...bins);
   return (
-    <div className="glass p-5">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-5">
-        <div>
-          <textarea
-            className="field font-mono text-xs"
-            rows={8}
-            placeholder={`Paste results as CSV — one student per row:\n\n${SAMPLE}`}
-            value={csv}
-            onChange={(e) => setCsv(e.target.value)}
-          />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+    <div className="assessment-grid">
+      <div className="glass p-[18px] min-w-0">
+        {assessment ? (
+          <>
+            <div className="flex items-center gap-3 justify-between">
+              <div className="eyebrow">
+                {assessment.kind.replace("-", " ")} ·{" "}
+                {assessment.results.length} students
+              </div>
+              <button
+                aria-label="Remove results"
+                title="Remove and re-upload"
+                disabled={busy}
+                onClick={clear}
+                className="text-dim"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <b className="text-[30px] text-pink tabular-nums">
+                  {assessment.masteryPct}%
+                </b>
+                <p className="text-[11px] text-muted">
+                  reached mastery (≥{assessment.masteryThreshold}%)
+                </p>
+              </div>
+              <div>
+                <b className="text-[30px] tabular-nums">
+                  {assessment.meanPct}%
+                </b>
+                <p className="text-[11px] text-muted">mean score</p>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              {bins.map((n, i) => (
+                <div key={i} className="flex-1 min-w-0 text-center">
+                  <div className="h-10 flex items-end">
+                    <div
+                      className="w-full rounded-t-[3px]"
+                      style={{
+                        height: Math.max(n ? 4 : 2, (n / maxBin) * 40),
+                        background: i >= 3 ? "var(--coral)" : "#fe9f9f59",
+                      }}
+                      title={`${i * 20}–${i === 4 ? 100 : i * 20 + 19}%: ${n} students`}
+                    />
+                  </div>
+                  <span className="text-[9px] font-mono text-dim">
+                    {i * 20}+
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-start gap-3 justify-between mt-5">
+              <div className="eyebrow">Misconceptions</div>
+              <Link href={classHref} className="text-[11px] text-cyan">
+                See all for {yearGroup || "this class"} →
+              </Link>
+            </div>
+            {assessment.misconceptions.length ? (
+              assessment.misconceptions.map((m) => {
+                const g = groups.find(
+                  (g) => g.id === misconceptionGroupId(yearGroup, m.text),
+                );
+                return (
+                  <details
+                    key={m.id}
+                    className="mt-2 border border-line rounded-lg p-3"
+                  >
+                    <summary className="text-[12.5px] cursor-pointer">
+                      {m.text}
+                      {m.studentCount !== undefined
+                        ? ` · ${m.studentCount} reported`
+                        : ""}
+                    </summary>
+                    {g && (
+                      <div className="mt-3">
+                        <MisconceptionDetail group={g} />
+                      </div>
+                    )}
+                    <MisconceptionEvidenceEditor
+                      lessonId={lessonId}
+                      noteId={m.id}
+                      students={assessment.results.map((r) => r.student)}
+                    />
+                  </details>
+                );
+              })
+            ) : (
+              <p className="text-xs text-muted mt-3">
+                None noted for this assessment.
+              </p>
+            )}
+            <details className="text-xs text-muted mt-4">
+              <summary>Student scores</summary>
+              <ul className="mt-2">
+                {assessment.results.map((r) => (
+                  <li key={r.student}>
+                    {r.student} · {r.score}/{r.max}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </>
+        ) : (
+          <>
+            <div className="eyebrow mb-3">Upload exit-ticket results</div>
+            <textarea
+              aria-label="Assessment CSV"
+              className="field font-mono text-xs"
+              rows={5}
+              placeholder={SAMPLE}
+              value={csv}
+              onChange={(e) => setCsv(e.target.value)}
+            />
             <input
               ref={fileRef}
               type="file"
               accept=".csv,.tsv,.txt"
-              className="hidden"
+              hidden
               onChange={async (e) => {
                 const f = e.target.files?.[0];
                 if (f) setCsv(await f.text());
               }}
             />
-            <button className="btn btn-ghost h-9" onClick={() => fileRef.current?.click()}>
-              <FileUp size={14} /> Choose CSV
-            </button>
-            <button className="text-xs text-muted hover:text-text px-2" onClick={() => setCsv(SAMPLE)}>
-              Use sample
-            </button>
-          </div>
-          <label className="block mt-4 text-xs text-muted">
-            Misconceptions seen (optional, one per line)
-            <textarea
-              className="field font-mono text-xs mt-1"
-              rows={3}
-              placeholder={"Added numerators and denominators separately x7\nUsed a common denominator but forgot to scale the numerator"}
-              value={misconceptions}
-              onChange={(e) => setMisconceptions(e.target.value)}
-            />
-          </label>
-        </div>
-        <div className="flex flex-col gap-3">
-          <label className="text-xs text-muted">
-            Type
-            <select className="field mt-1" value={kind} onChange={(e) => setKind(e.target.value as Assessment["kind"])}>
-              <option value="exit-ticket">Exit ticket</option>
-              <option value="worksheet">Worksheet</option>
-              <option value="assessment">Assessment</option>
-            </select>
-          </label>
-          <label className="text-xs text-muted">
-            Max score (if no max column)
-            <input type="number" min={1} className="field mt-1" value={defaultMax} onChange={(e) => setDefaultMax(+e.target.value || 1)} />
-          </label>
-          <label className="text-xs text-muted">
-            Mastery threshold %
-            <input type="number" min={1} max={100} className="field mt-1" value={threshold} onChange={(e) => setThreshold(+e.target.value || 70)} />
-          </label>
-          <button className="btn btn-primary mt-auto" onClick={submit} disabled={!csv.trim() || busy}>
-            {busy ? "Uploading…" : "Upload & triangulate"}
-          </button>
-          {error && <div className="text-xs text-red">{error}</div>}
-        </div>
+            <div className="flex gap-2 flex-wrap mt-3">
+              <button
+                className="btn btn-ghost !h-8 !px-3 !text-xs"
+                onClick={() => fileRef.current?.click()}
+              >
+                <FileUp size={14} />
+                Choose CSV
+              </button>
+              <button
+                className="btn btn-ghost !h-8 !px-3 !text-xs"
+                onClick={() => setCsv(SAMPLE)}
+              >
+                Use sample
+              </button>
+              <button
+                className="btn btn-primary !h-8 !px-3 !text-xs ml-auto"
+                onClick={submit}
+                disabled={!csv.trim() || busy}
+              >
+                {busy ? "Analysing results…" : "Upload & triangulate"}
+              </button>
+            </div>
+            <label className="block text-xs text-muted mt-4">
+              Misconceptions seen (optional, one per line)
+              <textarea
+                className="field font-mono text-xs mt-2"
+                rows={3}
+                placeholder={
+                  "Changed a subscript instead of adding a coefficient x6\nConfuses mass and weight"
+                }
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </label>
+            <details className="text-xs text-muted mt-3">
+              <summary>Assessment settings</summary>
+              <div className="grid gap-3 mt-3">
+                <label>
+                  Type
+                  <select
+                    className="field mt-1"
+                    value={kind}
+                    onChange={(e) =>
+                      setKind(e.target.value as Assessment["kind"])
+                    }
+                  >
+                    <option value="exit-ticket">Exit ticket</option>
+                    <option value="worksheet">Worksheet</option>
+                    <option value="assessment">Assessment</option>
+                  </select>
+                </label>
+                <label>
+                  Maximum (when no max column)
+                  <input
+                    type="number"
+                    min={1}
+                    className="field mt-1"
+                    value={maximum}
+                    onChange={(e) => setMaximum(Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Mastery threshold %
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    className="field mt-1"
+                    value={threshold}
+                    onChange={(e) => setThreshold(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+            </details>
+          </>
+        )}
+        {error && (
+          <p role="alert" className="text-xs text-red mt-3">
+            {error}
+          </p>
+        )}
+      </div>
+      <div className="glass p-5 min-w-0">
+        <div className="eyebrow">Triangulation</div>
+        <h3 className="font-semibold text-[20px] mt-3">
+          {verdict?.headline ??
+            (assessment
+              ? "Analyse this lesson to compare delivery"
+              : "Upload an exit ticket to see this")}
+        </h3>
+        <p className="text-[13px] text-muted mt-2 leading-relaxed">
+          {verdict?.detail ??
+            "Once results come in, Cadence checks whether what the delivery score found is showing up in what students can do."}
+        </p>
+        <Link href={classHref} className="block text-xs text-cyan mt-4">
+          See misconceptions for {yearGroup || "this class"} →
+        </Link>
+        <p className="text-[11px] text-dim mt-6">
+          One lesson is one data point. Patterns across lessons matter more than
+          a single verdict.
+        </p>
       </div>
     </div>
   );

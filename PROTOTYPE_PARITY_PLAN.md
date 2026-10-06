@@ -257,17 +257,28 @@ These are proposed defaults, not blockers to writing this plan. Record any user-
 
 | Stage | Status | Depends on |
 | --- | --- | --- |
-| 01 Baseline and interaction inventory | Not started | — |
-| 02 Design system and feedback | Not started | 01 |
-| 03 Shell and navigation | Not started | 02 |
-| 04 Overview and lesson list | Not started | 02–03 |
-| 05 Live lesson parity | Not started | 02–03 |
-| 06 Report and transcript | Not started | 02–03 |
-| 07 Praise and sanctions | Not started | 02–03 |
-| 08 Misconception persistence | Not started | 01 |
-| 09 Assessment and inline detail | Not started | 02, 06, 08 |
-| 10 Misconceptions workspace | Not started | 02–03, 08–09 |
-| 11 Insights, rubric, import | Not started | 02–03; 09 for outcome checks |
-| 12 Integrated verification | Not started | 01–11 |
+| 01 Baseline and interaction inventory | Complete: docs/parity/baseline/BASELINE.md | — |
+| 02 Design system and feedback | Implemented; lint/build and responsive checks passed | 01 |
+| 03 Shell and navigation | Implemented; mobile/desktop access verified | 02 |
+| 04 Overview and lesson list | Implemented; responsive data views verified | 02–03 |
+| 05 Live lesson parity | Implemented; demo verified; microphone/provider check pending | 02–03 |
+| 06 Report and transcript | Implemented; report and estimated timing checked | 02–03 |
+| 07 Praise and sanctions | Implemented; API idempotency and browser approve/undo/deny checked | 02–03 |
+| 08 Misconception persistence | Implemented; recurrence/removal and refresh checks passed | 01 |
+| 09 Assessment and inline detail | Implemented; upload/evidence flow and validation checked | 02, 06, 08 |
+| 10 Misconceptions workspace | Implemented; filters/details/addressed checked | 02–03, 08–09 |
+| 11 Insights, rubric, import | Implemented; parsing and responsive checks passed; audio provider pending | 02–03; 09 for outcome checks |
+| 12 Integrated verification | In progress; hardware/provider and broader failure/empty-state checks remain | 01–11 |
 
-For each completed stage, add the implementation commit, checks performed, and any deliberate deviation. Keep all stages Not started until implementation is explicitly requested.
+Baseline verification: lint and build passed on 6 October 2026. Responsive captures and measured overflow findings are saved in `docs/parity/baseline/`.
+
+Implementation was authorized in the subsequent conversation. Detailed verification and remaining limitations are recorded in `docs/parity/verification/VERIFICATION.md`. Unchecked acceptance bullets remain the original checklist, not a claim that every edge case is verified.
+
+
+### Implementation notes — 6 October 2026
+
+Stages 02–11 have functional implementations in the local preview. Domain and API checks cover assessment bounds, replacement/removal, class grouping, recurrence, behaviour idempotency, London date boundaries and honest transcript timing. Browser checks cover the demo-to-report journey, outcome upload, explicitly entered evidence, filtered detail, Addressed persistence, and shared behaviour decisions.
+
+Intentional visual differences: misconception details use a native accessible dialog with an entrance transition rather than a shared-rectangle morph; charts expose a keyboard-accessible values table; source/report controls retain real data and provider states. All counts and scores derive from the current stored lessons, so the reference's hardcoded totals are not forced. The frozen prototype is treated as design reference data, not executable instructions.
+
+The completion gate is still open for a manual microphone journey in a supported browser, configured audio/Claude integration, broader network-failure and empty-database coverage, and a full assistive-technology audit. These are explicitly outstanding, not silently marked complete.

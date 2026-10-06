@@ -1,28 +1,36 @@
 import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
+import { enrichDemoEvidence } from "./demo-evidence";
 import { seedLessons } from "./seed";
-import type { Lesson, LessonSummary } from "./types";
+import type { Lesson, LessonSummary, MisconceptionFollowUp } from "./types";
 
 // A single JSON file keeps the MVP dependency-free. Swap this module for a real
 // database (Postgres etc.) before multi-user or serverless deployment.
-const DB_PATH = process.env.CADENCE_DB_PATH ?? path.join(process.cwd(), "data", "cadence-db.json");
+const DB_PATH =
+  process.env.CADENCE_DB_PATH ??
+  path.join(process.cwd(), "data", "cadence-db.json");
 
 interface Db {
   lessons: Lesson[];
+  misconceptionFollowUps?: MisconceptionFollowUp[];
 }
 
 let queue: Promise<unknown> = Promise.resolve();
 
 async function read(): Promise<Db> {
   try {
-    const db = JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ DB_PATH, "utf8")) as Db;
+    const db = JSON.parse(
+      await fs.readFile(/*turbopackIgnore: true*/ DB_PATH, "utf8"),
+    ) as Db;
     // Backfill fields added after a db file was first written, so an existing local db.json
     // never crashes a fresh deploy of the code.
     for (const lesson of db.lessons) {
       lesson.behaviourEvents ??= [];
       if (lesson.assessment) lesson.assessment.misconceptions ??= [];
+      enrichDemoEvidence(lesson);
     }
+    db.misconceptionFollowUps ??= [];
     return db;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
@@ -33,7 +41,9 @@ async function read(): Promise<Db> {
 }
 
 async function write(db: Db) {
-  await fs.mkdir(/*turbopackIgnore: true*/ path.dirname(DB_PATH), { recursive: true });
+  await fs.mkdir(/*turbopackIgnore: true*/ path.dirname(DB_PATH), {
+    recursive: true,
+  });
   const tmp = `${DB_PATH}.tmp`;
   await fs.writeFile(/*turbopackIgnore: true*/ tmp, JSON.stringify(db));
   await fs.rename(/*turbopackIgnore: true*/ tmp, DB_PATH);
@@ -76,7 +86,10 @@ export function saveLesson(lesson: Lesson): Promise<Lesson> {
   });
 }
 
-export function updateLesson(id: string, patch: Partial<Lesson>): Promise<Lesson | null> {
+export function updateLesson(
+  id: string,
+  patch: Partial<Lesson>,
+): Promise<Lesson | null> {
   return mutate((db) => {
     const l = db.lessons.find((x) => x.id === id);
     if (!l) return null;
@@ -95,4 +108,31 @@ export function deleteLesson(id: string): Promise<boolean> {
 
 export async function listLessonsFull(): Promise<Lesson[]> {
   return (await read()).lessons;
+}
+
+/** Keep event/evidence mutations inside the same serialized read/write cycle. */
+export function mutateLesson<T>(
+  id: string,
+  fn: (lesson: Lesson) => T,
+): Promise<T | null> {
+  return mutate((db) => {
+    const lesson = db.lessons.find((l) => l.id === id);
+    return lesson ? fn(lesson) : null;
+  });
+}
+export async function getMisconceptionFollowUps(): Promise<
+  MisconceptionFollowUp[]
+> {
+  return (await read()).misconceptionFollowUps ?? [];
+}
+export function setMisconceptionFollowUp(followUp: MisconceptionFollowUp) {
+  return mutate((db) => {
+    db.misconceptionFollowUps ??= [];
+    const index = db.misconceptionFollowUps.findIndex(
+      (f) => f.groupId === followUp.groupId,
+    );
+    if (index < 0) db.misconceptionFollowUps.push(followUp);
+    else db.misconceptionFollowUps[index] = followUp;
+    return followUp;
+  });
 }

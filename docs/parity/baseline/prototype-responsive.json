@@ -1,0 +1,290 @@
+[
+  {
+    "surface": "prototype",
+    "view": "overview",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "overview",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "overview",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "overview",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "live",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "live",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "live",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "live",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "report",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "report",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "report",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "report",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "behaviour",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "behaviour",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "behaviour",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "behaviour",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "misconceptions",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "misconceptions",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "misconceptions",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "misconceptions",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "insights",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "insights",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "insights",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "insights",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "rubric",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "rubric",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "rubric",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "rubric",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "import",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "import",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "import",
+    "width": 768,
+    "actual": {
+      "scroll": 865,
+      "w": 768
+    }
+  },
+  {
+    "surface": "prototype",
+    "view": "import",
+    "width": 390,
+    "actual": {
+      "scroll": 601,
+      "w": 390
+    }
+  }
+]

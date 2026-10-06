@@ -16,7 +16,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lessons/[id]/as
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, { status: 400 });
   if (!(await getLesson(id))) return Response.json({ error: "Not found" }, { status: 404 });
 
-  const results = parseResults(parsed.data.csv, parsed.data.defaultMax);
+  let results;
+  try { results = parseResults(parsed.data.csv, parsed.data.defaultMax); } catch(err) { return Response.json({error:err instanceof Error?err.message:"Invalid CSV"},{status:400}); }
   if (!results.length) return Response.json({ error: "No rows found. Use: student, score[, max]" }, { status: 400 });
   const misconceptions = parseMisconceptions(parsed.data.misconceptions);
   const assessment = buildAssessment(parsed.data.kind, results, parsed.data.masteryThreshold, misconceptions);

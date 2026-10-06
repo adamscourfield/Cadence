@@ -25,10 +25,10 @@ Seven dimensions, each scored 1–4 (Emerging → Exemplary): questioning depth,
 Every lesson (live, imported or demo) is scanned for merit/sanction language — `src/lib/behaviour.ts` matches phrases like "that's a merit", "demerit", "detention", "leave the room" against teacher-spoken sentences, and tries to resolve a nearby name against the class roster. Three outcomes:
 
 - **Resolved** — the name matches exactly one student on the roster: shown pre-filled, ready to confirm.
-- **Ambiguous / unrecognised** — the heard name matches several students, or none: shown with a "pick student" dropdown instead of a confirm button.
-- **No name heard** — the sanction/merit language was detected but no name was nearby: same dropdown, empty until picked.
+- **Ambiguous / unrecognised** — the heard name matches several students, or none: shown with a "pick student" dropdown; choosing a name enables a separate Approve button.
+- **No name heard** — the sanction/merit language was detected but no name was nearby: same dropdown, empty until picked; approval remains a separate action.
 
-Nothing is written until a teacher taps confirm on the lesson report (`BehaviourPanel`) — detection from speech is inherently fallible (misheard names, wrong-speaker attribution), so this is a human-in-the-loop review queue, not an automatic ledger. Confirmed events aggregate into a same-day per-student tally at `/behaviour`.
+Nothing counts until a teacher explicitly approves on the lesson report or the global Behaviour queue (`BehaviourPanel`) — detection from speech is inherently fallible (misheard names, wrong-speaker attribution), so this is a human-in-the-loop review queue, not an automatic ledger. Confirmed events aggregate into a same-day per-student tally at `/behaviour`.
 
 `src/lib/roster.ts` is a **placeholder**: it fabricates a deterministic class list from a fixed name pool since Cadence has no student data of its own. It exists to give the matching logic something real to resolve against, and is designed to be swapped for an actual roster (the intent is for Cadence to become a module inside Anaxi, which owns the real student/staff roster) without changing anything else — `getRoster`/`resolveStudent` are the only two functions that would need to change.
 
@@ -41,7 +41,7 @@ Audio (from the live recorder or an uploaded file) is transcribed via [AssemblyA
 - **Claude** (when `ANTHROPIC_API_KEY` is set): the transcript and deterministic timing metrics go to Claude, which returns structured rubric scores with verbatim evidence (`src/lib/analysis/claude.ts`). Model defaults to `claude-opus-5`; override with `CADENCE_MODEL`.
 - **Pattern engine** (always available, no key needed): a transparent regex and timing engine (`src/lib/analysis/heuristic.ts`). It is fast and explainable, but crude. Treat its scores as indicative.
 
-Timing metrics (wait time, pace, talk ratio) are always computed deterministically from timestamps, never estimated by the model.
+Timing metrics are computed deterministically. VTT/SRT cue boundaries support measured wait times. Plain text and start-only timestamps estimate speech duration at 150 wpm: pace is labelled estimated and wait time remains unknown. Unlabelled speakers are shown explicitly; talk ratio requires speaker labels.
 
 ## Getting started
 
@@ -74,4 +74,33 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Anthropic
 
 ## Design
 
-Flat, monochrome-first UI (white surfaces, near-black chrome, 1px borders instead of shadows) with colour reserved for data — score bands, question types, rubric levels — rather than branding. This deliberately follows [Anaxi](https://github.com/adamscourfield/anaxi)'s design language, since Cadence is intended to become a module inside it. All tokens live in `src/app/globals.css`.
+Compact, responsive, monochrome-first UI (white surfaces, near-black chrome, 1px borders instead of shadows) with colour reserved for data — score bands, question types, rubric levels — rather than branding. This deliberately follows [Anaxi](https://github.com/adamscourfield/anaxi)'s design language, since Cadence is intended to become a module inside it. All tokens live in `src/app/globals.css`.
+
+
+## Local prototype preview and progress
+
+Use `npm ci` and `npm run dev`, then open [localhost:3000](http://localhost:3000). Set `CADENCE_DB_PATH=data/cadence-preview.json` in `.env.local` to keep a dedicated seeded preview. An absent database is seeded automatically with 12 synthetic lessons. No provider keys are needed for demo recording or transcript imports. Keep this server running while reviewing changes.
+
+The implementation and remaining verification are tracked in [PROTOTYPE_PARITY_PLAN.md](PROTOTYPE_PARITY_PLAN.md). The frozen reference, responsive captures and checks live in `docs/parity/`. Navigation, charts, reports, review queues, assessment uploads and misconception details now use the prototype's compact layout. The real lesson list, provider status, re-analysis and recovery controls remain available.
+
+Misconceptions group matching uses the same wording within a class. Addressed status is saved and new or changed observations reopen a group. Counts represent reported instances, rather than deduplicated students. Student answers are explicitly entered by a teacher; only demo lessons receive synthetic reference evidence. Replacing assessment CSV removes its previous notes/evidence, so copy anything needed before replacement.
+
+Behaviour approvals are idempotent and can be undone; name selection does not approve an event. Tallies use the lesson date in Europe/London and distinguish the same name in different classes. Historical demo lessons therefore do not appear in today's tally.
+
+## Parity verification
+
+Run `npm run lint`, `npx tsc --noEmit`, and `npm run build`. Focused domain checks:
+
+```bash
+npx tsc --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir /tmp/cadence-domain src/lib/misconceptions.ts src/lib/triangulate.ts src/lib/behaviour.ts src/lib/transcript.ts src/lib/analysis/heuristic.ts
+node scripts/parity-domain-checks.mjs
+```
+
+API checks create and remove their own synthetic fixture. Run them against a separate local validation database, never the preview database:
+
+```bash
+CADENCE_DB_PATH=data/cadence-validation.json npm run start -- --port 3002
+node scripts/parity-api-checks.mjs
+```
+
+The scripted checks require the seeded lessons and are restricted to localhost:3002. See `docs/parity/verification/VERIFICATION.md` for browser checks and outstanding hardware/provider validation.

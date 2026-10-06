@@ -1,0 +1,42 @@
+[
+  {
+    "view": "overview",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "live",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "report",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "behaviour",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "misconceptions",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "insights",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "rubric",
+    "viewport": 320,
+    "width": 320
+  },
+  {
+    "view": "import",
+    "viewport": 320,
+    "width": 320
+  }
+]

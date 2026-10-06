@@ -32,7 +32,11 @@ export function LessonTimeline({
                 href={`#seg-${q.segmentId}`}
                 title={`${formatClock(s.start - t0)} · ${q.type}: ${q.text}`}
                 className="absolute top-0 -translate-x-1/2 w-1.5 h-5 rounded-full hover:scale-125 transition-transform"
-                style={{ left: pct(s.end), background: QTYPE_COLOR[q.type], boxShadow: `0 0 8px ${QTYPE_COLOR[q.type]}` }}
+                style={{
+                  left: pct(s.end),
+                  background: QTYPE_COLOR[q.type],
+                  boxShadow: `0 0 8px ${QTYPE_COLOR[q.type]}`,
+                }}
               />
             );
           })}
@@ -46,7 +50,12 @@ export function LessonTimeline({
               style={{
                 left: pct(s.start),
                 width: `max(2px, ${((s.end - s.start) / total) * 100}%)`,
-                background: s.speaker === "student" ? "var(--pink)" : "linear-gradient(180deg, var(--cyan), var(--violet))",
+                background:
+                  s.speaker === "student"
+                    ? "var(--pink)"
+                    : s.speaker === "unknown"
+                      ? "var(--dim)"
+                      : "linear-gradient(180deg, var(--cyan), var(--violet))",
                 opacity: s.speaker === "student" ? 0.9 : 0.75,
               }}
             />
@@ -55,22 +64,35 @@ export function LessonTimeline({
       </div>
       <div className="relative h-4 mt-1.5 font-mono text-[10px] text-dim">
         {ticks.map((t) => (
-          <span key={t} className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full" style={{ left: `${t * 100}%` }}>
+          <span
+            key={t}
+            className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full"
+            style={{ left: `${t * 100}%` }}
+          >
             {formatClock(total * t)}
           </span>
         ))}
       </div>
       <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted">
         <span className="flex items-center gap-2">
-          <span className="w-3 h-2 rounded-sm bg-gradient-to-b from-cyan to-violet" /> Teacher talk
+          <span className="w-3 h-2 rounded-sm bg-gradient-to-b from-cyan to-violet" />{" "}
+          Teacher talk
         </span>
         <span className="flex items-center gap-2">
           <span className="w-3 h-2 rounded-sm bg-pink" /> Student talk
         </span>
         <span className="flex items-center gap-2">
-          <span className="w-1 h-3 rounded-full bg-lime" /> Question (colour = type)
+          <span className="w-1 h-3 rounded-full bg-lime" /> Question (colour =
+          type)
         </span>
-        <span className="text-dim">Gaps = silence / independent work</span>
+        {segments.some((s) => s.speaker === "unknown") && (
+          <span>Grey = unlabelled speaker</span>
+        )}
+        <span className="text-dim">
+          {segments.some((s) => s.timing === "estimated")
+            ? "Speech durations and gaps estimated from text"
+            : "Gaps = no transcribed speech"}
+        </span>
       </div>
     </div>
   );

@@ -1,0 +1,301 @@
+{
+  "Year 7": [
+    {
+      "text": "Confuses convergent and divergent boundary diagrams",
+      "count": 5,
+      "lessons": [
+        {
+          "title": "Plate boundaries and hazards",
+          "sub": "Geography · 11 Sept"
+        }
+      ],
+      "fix": "Give students two labelled diagrams side by side and have them physically push their hands together (convergent) and pull apart (divergent) while saying the term aloud — tying the word to the motion fixes the mix-up faster than more diagram practice.",
+      "students": [
+        {
+          "name": "Ella",
+          "answer": "Drew the plates moving apart, but labelled the diagram 'convergent boundary'.",
+          "why": "Convergent plates move towards each other; divergent plates move apart. The arrows and the label were mismatched."
+        },
+        {
+          "name": "Finn",
+          "answer": "Said a mid-ocean ridge forms at a convergent boundary.",
+          "why": "Mid-ocean ridges form where plates diverge and magma rises to fill the gap — the opposite of convergence."
+        },
+        {
+          "name": "Aisha",
+          "answer": "Matched the term \"subduction zone\" to a divergent boundary.",
+          "why": "Subduction only happens where plates converge and one is forced beneath the other."
+        },
+        {
+          "name": "Sam",
+          "answer": "Labelled a fold-mountain diagram (like the Andes) as divergent.",
+          "why": "Mountain ranges like the Andes form at convergent boundaries, where crust is compressed and pushed upward."
+        },
+        {
+          "name": "Grace",
+          "answer": "Wrote \"divergent means the plates crash together\".",
+          "why": "That's the definition of convergent — divergent specifically means the plates are moving apart."
+        }
+      ]
+    }
+  ],
+  "Year 8": [
+    {
+      "text": "Treats the ratio as a fraction of one quantity rather than the whole",
+      "count": 9,
+      "lessons": [
+        {
+          "title": "Ratio and proportion problems",
+          "sub": "Maths · 14 Sept"
+        }
+      ],
+      "fix": "Re-teach with bar models before any calculation: draw the ratio as labelled boxes, count the total number of boxes first, then divide. Doing this physically for 3–4 examples before returning to numbers alone tends to clear it up for most of the class.",
+      "students": [
+        {
+          "name": "Hana",
+          "answer": "For 20 sweets split 2:3, wrote \"20 ÷ 2 = 10 each\".",
+          "why": "Divided by one part of the ratio instead of the total number of parts (2 + 3 = 5)."
+        },
+        {
+          "name": "Max",
+          "answer": "Split £40 in the ratio 3:5 as \"£40 ÷ 3 = £13.33 each\".",
+          "why": "Treated the ratio as an even split rather than sharing proportionally across all 8 parts."
+        },
+        {
+          "name": "Lily",
+          "answer": "For a 1:4 ratio, said \"1 is a quarter of the total\".",
+          "why": "1:4 means 1 part out of 5 total parts, not 1 part out of 4."
+        },
+        {
+          "name": "Ravi",
+          "answer": "Scaled only the first number when increasing a recipe in ratio.",
+          "why": "Both sides of a ratio must be scaled by the same multiplier to stay equivalent."
+        },
+        {
+          "name": "Chloe",
+          "answer": "Said a 3:1 ratio means \"3 out of 4 are the first thing\" — but then divided the total by 1 instead of 4.",
+          "why": "The whole has to be split into all the parts of the ratio (3 + 1 = 4) before multiplying back up."
+        },
+        {
+          "name": "Ben",
+          "answer": "Divided the total by the larger ratio number only.",
+          "why": "Needs to divide by the sum of all parts in the ratio, not just the biggest one."
+        },
+        {
+          "name": "Theo",
+          "answer": "Thought doubling one side of a ratio doubles the total.",
+          "why": "Only works if both sides are doubled together — doubling one side changes the ratio itself."
+        },
+        {
+          "name": "Omar",
+          "answer": "Added the ratio numbers together and called that the answer.",
+          "why": "The sum of the parts (e.g. 2 + 3 = 5) is a step, not the final shared amount."
+        },
+        {
+          "name": "Kai",
+          "answer": "Used the ratio as a fraction of only one named quantity.",
+          "why": "A ratio compares two quantities to each other, not one quantity to itself."
+        }
+      ]
+    },
+    {
+      "text": "Adds all side lengths instead of splitting into rectangles",
+      "count": 5,
+      "lessons": [
+        {
+          "title": "Area of compound shapes",
+          "sub": "Maths · 7 Sept"
+        }
+      ],
+      "fix": "Have students physically cut a paper L-shape into two rectangles before any calculation, labelling each piece’s dimensions. Separating \"find the missing sides\" from \"multiply and add\" into two explicit steps removes most of the confusion.",
+      "students": [
+        {
+          "name": "Zara",
+          "answer": "Added every labelled side length together for an L-shape and called it the area.",
+          "why": "That calculates perimeter, not area — the shape needs splitting into rectangles and each one's area found separately."
+        },
+        {
+          "name": "Noah",
+          "answer": "Multiplied the two outer bounding dimensions without subtracting the missing corner.",
+          "why": "Treated the L-shape as a full rectangle, ignoring the cut-out section."
+        },
+        {
+          "name": "Ivy",
+          "answer": "Split the shape into two rectangles but used the wrong side length for the second one.",
+          "why": "Needed to work out the missing side length from the given dimensions before multiplying."
+        },
+        {
+          "name": "Ruby",
+          "answer": "Found the area of one rectangle only and stopped.",
+          "why": "A compound shape needs every rectangle it was split into added together."
+        },
+        {
+          "name": "Omar",
+          "answer": "Added the two rectangle areas but also added the overlap twice.",
+          "why": "When splitting a compound shape, each square unit should be counted exactly once."
+        }
+      ]
+    }
+  ],
+  "Year 9": [
+    {
+      "text": "Changes a subscript instead of adding a coefficient",
+      "count": 6,
+      "lessons": [
+        {
+          "title": "Balancing chemical equations",
+          "sub": "Science · 18 Sept"
+        }
+      ],
+      "fix": "Use molecule model kits or drawings: show that changing a subscript builds a different molecule entirely, while a coefficient just means \"more copies of the same molecule.\" A quick card sort — \"same substance\" vs \"different substance\" — makes the distinction stick.",
+      "students": [
+        {
+          "name": "Amara",
+          "answer": "Balanced H₂ + O₂ → H₂O by changing it to H₂ + O₂ → H₂O₂.",
+          "why": "Changing a subscript changes the substance itself (water becomes hydrogen peroxide) — only coefficients in front of formulae may change."
+        },
+        {
+          "name": "Jamal",
+          "answer": "Wrote 2H₂ + O₂ → 2H₂O₂ to try to balance oxygen.",
+          "why": "Should have used a coefficient of 2 in front of H₂O, not altered the subscript to O₂."
+        },
+        {
+          "name": "Priya",
+          "answer": "Changed CO₂ to CO₄ to balance an equation with excess oxygen.",
+          "why": "CO₄ is not a real compound — the fix is a coefficient in front of CO₂, not a new subscript."
+        },
+        {
+          "name": "Tom",
+          "answer": "Balanced Mg + O₂ → MgO by writing MgO₂.",
+          "why": "MgO₂ changes what the compound is; the equation needed 2Mg + O₂ → 2MgO instead."
+        },
+        {
+          "name": "Sofia",
+          "answer": "Said \"I made the big number next to oxygen bigger to match\".",
+          "why": "Describes editing the subscript rather than placing a coefficient before the whole formula."
+        },
+        {
+          "name": "Leo",
+          "answer": "Left an equation unbalanced rather than risk \"changing the formula\".",
+          "why": "Correct instinct not to touch the formula, but missed that a coefficient in front is how balancing is done instead."
+        }
+      ]
+    },
+    {
+      "text": "Thinks plants only photosynthesise and don’t respire",
+      "count": 4,
+      "lessons": [
+        {
+          "title": "Photosynthesis and limiting factors",
+          "sub": "Science · 4 Sept"
+        }
+      ],
+      "fix": "Show a 24-hour gas-exchange graph for a plant and ask students to shade when each process is happening — they’ll see respiration runs continuously while photosynthesis switches off in the dark, correcting the \"plants only photosynthesise\" idea visually.",
+      "students": [
+        {
+          "name": "Maya",
+          "answer": "Wrote \"plants breathe in CO₂ and never give it out\".",
+          "why": "Plants respire continuously, releasing CO₂, as well as photosynthesising in daylight."
+        },
+        {
+          "name": "Ethan",
+          "answer": "Said at night \"the plant does nothing\" because there is no light.",
+          "why": "Respiration continues at night — only photosynthesis stops without light."
+        },
+        {
+          "name": "Noah",
+          "answer": "Drew a diagram with only one arrow: CO₂ in, O₂ out, all the time.",
+          "why": "Misses the respiration process running in parallel, using O₂ and releasing CO₂."
+        },
+        {
+          "name": "Kai",
+          "answer": "Said oxygen production means \"plants don’t need oxygen\".",
+          "why": "Plants need oxygen for respiration just like animals do — photosynthesis and respiration are separate processes."
+        }
+      ]
+    }
+  ],
+  "Year 10": [
+    {
+      "text": "Attributes improved health solely to medicine, not sanitation",
+      "count": 3,
+      "lessons": [
+        {
+          "title": "The Industrial Revolution and public health",
+          "sub": "History · 21 Sept"
+        }
+      ],
+      "fix": "Build a simple timeline together: plot the fall in death rates against the dates of the sewer system vs the dates real cholera/antibiotic treatments arrived. Seeing the sanitation work predate the medicine by decades is more convincing than being told it.",
+      "students": [
+        {
+          "name": "Ruby",
+          "answer": "Wrote \"death rates fell because doctors got better at treating disease\".",
+          "why": "Much of the fall predates effective medical treatment — clean water and sewers removed the source of disease (e.g. cholera) before antibiotics existed."
+        },
+        {
+          "name": "Omar",
+          "answer": "Credited vaccination alone for the decline in cholera deaths.",
+          "why": "There was no cholera vaccine in this period — the key change was Bazalgette’s sewer system separating waste from drinking water."
+        },
+        {
+          "name": "Ella",
+          "answer": "Said \"hospitals got bigger\" as the main reason for improved health.",
+          "why": "Hospital capacity mattered less here than public sanitation infrastructure removing the causes of disease at a population level."
+        }
+      ]
+    },
+    {
+      "text": "Identifies a technique but doesn’t link it to effect",
+      "count": 8,
+      "lessons": [
+        {
+          "title": "Analysing language in Macbeth Act 1",
+          "sub": "English · 28 Aug"
+        }
+      ],
+      "fix": "Drill the sentence frame \"The writer uses [technique] to ___, which makes the reader feel/think ___\" on 3–4 quotes as a whole-class warm-up before independent analysis — most students can spot the device, the gap is purely in the connective phrasing.",
+      "students": [
+        {
+          "name": "Finn",
+          "answer": "Wrote \"Shakespeare uses a metaphor here\" and stopped.",
+          "why": "Naming the device is only half the analysis — needs to say what effect it creates for the reader/audience."
+        },
+        {
+          "name": "Aisha",
+          "answer": "Labelled the imagery as \"dark and blood-related\" with no further comment.",
+          "why": "Should connect the pattern of blood imagery to Macbeth’s growing guilt or the inevitability of violence."
+        },
+        {
+          "name": "Sam",
+          "answer": "Quoted \"fair is foul, and foul is fair\" and called it \"paradox\" with no explanation.",
+          "why": "Needed to explain how the paradox unsettles the audience and signals a world where moral order is inverted."
+        },
+        {
+          "name": "Theo",
+          "answer": "Identified the witches’ rhyming couplets but didn’t say why.",
+          "why": "The sing-song rhythm creates an eerie, incantatory effect — distinguishing their speech from the other characters."
+        },
+        {
+          "name": "Hana",
+          "answer": "Spotted repetition of \"when\" in the opening but left it uninterpreted.",
+          "why": "Repetition here builds ritualistic, chant-like pacing that foreshadows supernatural control over events."
+        },
+        {
+          "name": "Max",
+          "answer": "Noted short sentences in a tense scene without saying what they do.",
+          "why": "Short sentences speed up pacing and mirror characters’ urgency or panic."
+        },
+        {
+          "name": "Lily",
+          "answer": "Wrote \"this is personification\" for the storm imagery, nothing more.",
+          "why": "Personifying the storm links the natural world’s turmoil to the political and moral chaos in the play."
+        },
+        {
+          "name": "Ravi",
+          "answer": "Labelled dramatic irony correctly but didn’t explain the tension it creates.",
+          "why": "Needed to say how the audience knowing more than a character builds suspense or dread."
+        }
+      ]
+    }
+  ]
+}

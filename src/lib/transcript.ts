@@ -6,7 +6,12 @@ const TIMESTAMP = /(?:(\d{1,2}):)?(\d{1,2}):(\d{2})(?:[.,](\d{1,3}))?/;
 const ASSUMED_WPM = 150;
 
 function toSec(m: RegExpMatchArray) {
-  return (m[1] ? +m[1] * 3600 : 0) + +m[2] * 60 + +m[3] + (m[4] ? +m[4] / 10 ** m[4].length : 0);
+  return (
+    (m[1] ? +m[1] * 3600 : 0) +
+    +m[2] * 60 +
+    +m[3] +
+    (m[4] ? +m[4] / 10 ** m[4].length : 0)
+  );
 }
 
 function speakerOf(prefix: string | undefined): Speaker {
@@ -27,18 +32,31 @@ export function parseTranscript(raw: string): TranscriptSegment[] {
 
   if (/-->/.test(text)) {
     for (const block of text.split(/\n\s*\n/)) {
-      const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+      const lines = block
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
       const cueIdx = lines.findIndex((l) => l.includes("-->"));
       if (cueIdx < 0) continue;
       const [a, b] = lines[cueIdx].split("-->");
       const ma = a.match(TIMESTAMP);
       const mb = b.match(TIMESTAMP);
       if (!ma || !mb) continue;
-      let body = lines.slice(cueIdx + 1).join(" ").replace(/<[^>]+>/g, "");
+      let body = lines
+        .slice(cueIdx + 1)
+        .join(" ")
+        .replace(/<[^>]+>/g, "");
       const vSpeaker = lines[cueIdx + 1]?.match(/^<v\s+([^>]+)>/i)?.[1];
       const p = body.match(SPEAKER_PREFIX);
       if (p) body = body.slice(p[0].length);
-      segs.push({ id: "", start: toSec(ma), end: toSec(mb), speaker: speakerOf(p?.[1] ?? vSpeaker), text: body.trim() });
+      segs.push({
+        id: "",
+        start: toSec(ma),
+        end: toSec(mb),
+        speaker: speakerOf(p?.[1] ?? vSpeaker),
+        timing: "measured",
+        text: body.trim(),
+      });
     }
     return number(segs);
   }
@@ -58,12 +76,20 @@ export function parseTranscript(raw: string): TranscriptSegment[] {
     if (!line) continue;
     const dur = Math.max(1, (wordCount(line) / ASSUMED_WPM) * 60);
     const s = start ?? clock;
-    segs.push({ id: "", start: s, end: s + dur, speaker: speakerOf(p?.[1]), text: line });
+    segs.push({
+      id: "",
+      start: s,
+      end: s + dur,
+      speaker: speakerOf(p?.[1]),
+      timing: "estimated",
+      text: line,
+    });
     clock = s + dur + 1;
   }
   // Fix end times when explicit timestamps are present so segments don't overlap.
   for (let i = 0; i < segs.length - 1; i++) {
-    if (segs[i].end > segs[i + 1].start) segs[i].end = Math.max(segs[i].start + 0.5, segs[i + 1].start - 0.3);
+    if (segs[i].end > segs[i + 1].start)
+      segs[i].end = Math.max(segs[i].start + 0.5, segs[i + 1].start - 0.3);
   }
   return number(segs);
 }

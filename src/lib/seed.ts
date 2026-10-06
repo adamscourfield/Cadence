@@ -1,3 +1,4 @@
+import { enrichDemoEvidence } from "./demo-evidence";
 // Synthetic demo lessons so a fresh install has something to explore.
 // Clearly labelled as demo data in the UI; deterministic via a seeded RNG.
 import { heuristicAnalysis } from "./analysis/heuristic";
@@ -174,13 +175,11 @@ export function seedLessons(): Lesson[] {
       behaviourEvents: detectBehaviourEvents(segments, yearGroup),
     });
   }
+  lessons.forEach(enrichDemoEvidence);
   return lessons.reverse();
 }
 
 /** A scripted lesson for the live page's demo mode (no microphone needed). */
 export function demoScript(): TranscriptSegment[] {
-  return buildSegments([...WEAK_OPEN, ...STRONG_MODEL, ...WEAK_EXPLAIN.slice(2, 7), ...STRONG_CHECK, ...STRONG_PRACTICE]).map((s) => ({
-    ...s,
-    speaker: "unknown" as const,
-  }));
+  return buildSegments([...WEAK_OPEN, ...STRONG_MODEL, ...WEAK_EXPLAIN.slice(2, 7), ...STRONG_CHECK, ...STRONG_PRACTICE]);
 }

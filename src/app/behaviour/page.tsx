@@ -1,85 +1,135 @@
-import Link from "next/link";
-import { Award, ArrowRight, Clock, DoorOpen, ShieldAlert } from "lucide-react";
 import { listLessons } from "@/lib/store";
-import { dailyTally } from "@/lib/behaviour";
-import { EmptyState, PageHeader } from "@/components/ui";
-
+import { dailyTally, schoolDay } from "@/lib/behaviour";
+import { getRoster } from "@/lib/roster";
+import { BehaviourPanel } from "@/components/BehaviourPanel";
+import { EmptyState, PageHeader, Stat } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Behaviour · Cadence" };
-
 export default async function BehaviourPage() {
-  const lessons = await listLessons();
-  const today = new Date().toISOString().slice(0, 10);
-  const tally = dailyTally(lessons, today);
-  const pendingByLesson = lessons
-    .map((l) => ({ lesson: l, pending: l.behaviourEvents.filter((e) => e.status === "pending").length }))
-    .filter((x) => x.pending > 0)
-    .sort((a, b) => b.pending - a.pending);
-
+  const lessons = await listLessons(),
+    tally = dailyTally(lessons, schoolDay());
+  const pending = lessons.filter((l) =>
+    l.behaviourEvents.some((e) => e.status === "pending"),
+  );
+  const count = pending.reduce(
+    (n, l) =>
+      n + l.behaviourEvents.filter((e) => e.status === "pending").length,
+    0,
+  );
+  const merits = tally.reduce((n, r) => n + r.merit, 0),
+    sanctions = tally.reduce(
+      (n, r) => n + r.demerit + r.detention + r.roomRemoval,
+      0,
+    );
+  const top = [...tally].sort(
+    (a, b) => b.merit - a.merit || a.student.localeCompare(b.student),
+  )[0];
   return (
     <>
-      <PageHeader
-        eyebrow="Behaviour"
-        title={<>Merits and sanctions, <span className="glow-text">heard not clicked.</span></>}
-      />
-
-      {pendingByLesson.length > 0 && (
-        <section className="glass p-5 mb-4 rise">
-          <div className="eyebrow mb-3">Needs review</div>
-          <div className="flex flex-col gap-2">
-            {pendingByLesson.map(({ lesson, pending }) => (
-              <Link
-                key={lesson.id}
-                href={`/lessons/${lesson.id}`}
-                className="flex items-center justify-between text-sm rounded-xl px-3 py-2.5 bg-panel border border-line hover:border-line-strong"
-              >
-                <span className="min-w-0 truncate">
-                  {lesson.title} <span className="text-dim">· {lesson.subject}{lesson.yearGroup && ` · ${lesson.yearGroup}`}</span>
-                </span>
-                <span className="chip shrink-0 ml-3">
-                  {pending} pending <ArrowRight size={12} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div className="eyebrow mb-3">Today · confirmed only</div>
-      {tally.length === 0 ? (
-        <EmptyState title="Nothing confirmed for today yet">
-          Detections wait on the lesson report until a teacher confirms them — nothing here counts against a
-          student until then. {pendingByLesson.length === 0 && "Record or import a lesson to see it working."}
-        </EmptyState>
-      ) : (
-        <div className="glass overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left border-b border-line">
-                <th className="px-5 py-3 eyebrow !text-[10px] font-normal">Student</th>
-                <th className="px-3 py-3 eyebrow !text-[10px] font-normal text-center"><Award size={13} className="inline text-lime" /> Merit</th>
-                <th className="px-3 py-3 eyebrow !text-[10px] font-normal text-center"><ShieldAlert size={13} className="inline text-amber" /> Demerit</th>
-                <th className="px-3 py-3 eyebrow !text-[10px] font-normal text-center"><Clock size={13} className="inline text-red" /> Detention</th>
-                <th className="px-3 py-3 eyebrow !text-[10px] font-normal text-center"><DoorOpen size={13} className="inline text-red" /> Removal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tally.map((row) => (
-                <tr key={row.student} className="border-b border-line last:border-0">
-                  <td className="px-5 py-3 font-medium">{row.student}</td>
-                  <td className="px-3 py-3 text-center tabular-nums">{row.merit || <span className="text-dim">—</span>}</td>
-                  <td className="px-3 py-3 text-center tabular-nums">{row.demerit || <span className="text-dim">—</span>}</td>
-                  <td className="px-3 py-3 text-center tabular-nums">{row.detention || <span className="text-dim">—</span>}</td>
-                  <td className="px-3 py-3 text-center tabular-nums">{row.roomRemoval || <span className="text-dim">—</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <PageHeader eyebrow="Behaviour" title="Praise and Sanctions" />
+      <div className="overview-stats mb-6">
+        <Stat
+          label="Needs review"
+          value={count}
+          hint="detections to confirm"
+          accent="var(--amber)"
+        />
+        <Stat
+          label="Merits today"
+          value={merits}
+          hint="confirmed only"
+          accent="var(--green)"
+        />
+        <Stat
+          label="Sanctions today"
+          value={sanctions}
+          hint="demerits + detentions + removals"
+          accent="var(--red)"
+        />
+        <Stat
+          label="Top performer"
+          value={top?.merit ? top.student : "—"}
+          hint={top?.merit ? `${top.merit} merits` : "no merits yet"}
+        />
+      </div>
+      <h2 className="text-[16px] font-semibold mb-3">Needs review</h2>
+      <p className="text-xs text-muted mb-4">
+        Detected from speech. Nothing counts until you approve the student and
+        event.
+      </p>
+      {count ? (
+        <div className="review-grid mb-6">
+          {pending.map((l) => (
+            <BehaviourPanel
+              key={l.id}
+              lessonId={l.id}
+              events={l.behaviourEvents}
+              roster={getRoster(l.yearGroup)}
+              context={`${l.title} · ${l.subject} · ${l.yearGroup}`}
+              pendingOnly
+            />
+          ))}
         </div>
+      ) : (
+        <EmptyState title="All caught up">
+          No detections awaiting review.
+        </EmptyState>
       )}
-      <p className="mt-4 text-xs text-dim leading-relaxed max-w-2xl">
-        This is a placeholder roster and tally — Cadence has no real student records of its own. It&apos;s built to be
-        replaced by the actual roster and behaviour log once this becomes a module inside Anaxi.
+      <h2 className="text-[16px] font-semibold mt-6 mb-3">
+        Today’s confirmed tally
+      </h2>
+      {tally.length ? (
+        <div className="glass overflow-hidden">
+          {tally.map((r) => (
+            <div
+              key={`${r.yearGroup}|${r.student}`}
+              className="flex items-center flex-wrap gap-3 px-4 py-3 border-b border-line last:border-0"
+            >
+              <span
+                className="review-avatar"
+                style={{ background: "var(--well)", color: "var(--muted)" }}
+              >
+                {r.student
+                  .split(/\s+/)
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <b className="text-sm">{r.student}</b>
+                <p className="text-xs text-dim">{r.yearGroup}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  [r.merit, "merit", "var(--green)"],
+                  [r.demerit, "demerit", "var(--amber)"],
+                  [r.detention, "detention", "var(--red)"],
+                  [r.roomRemoval, "removal", "var(--red)"],
+                ].map(
+                  ([n, label, color]) =>
+                    Number(n) > 0 && (
+                      <span
+                        key={String(label)}
+                        className="chip"
+                        style={{ color: String(color) }}
+                      >
+                        {n} {label}
+                        {Number(n) !== 1 ? "s" : ""}
+                      </span>
+                    ),
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState title="Nothing confirmed today">
+          Approvals for earlier lessons stay attached to those lesson dates.
+        </EmptyState>
+      )}
+      <p className="text-xs text-dim mt-4">
+        Demo roster · day boundary Europe/London. Real student records will come
+        from the connected school roster.
       </p>
     </>
   );

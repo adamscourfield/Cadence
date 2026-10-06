@@ -12,18 +12,22 @@ export function ReportActions({ id }: { id: string }) {
   async function reanalyse() {
     setBusy("analyse");
     setError(null);
+    try {
     const res = await fetch(`/api/lessons/${id}/analyse`, { method: "POST" });
     if (!res.ok) setError("Re-analysis failed");
-    setBusy(null);
     router.refresh();
+    } catch {setError("Connection failed. Try again.");} finally {setBusy(null);}
   }
 
   async function remove() {
     if (!confirm("Delete this lesson and its transcript permanently?")) return;
     setBusy("delete");
-    await fetch(`/api/lessons/${id}`, { method: "DELETE" });
+    try {
+    const res=await fetch(`/api/lessons/${id}`, { method: "DELETE" });
+    if(!res.ok)throw new Error("Deletion failed");
     router.push("/lessons");
     router.refresh();
+    } catch {setError("Could not delete the lesson. Try again.");setBusy(null);}
   }
 
   return (

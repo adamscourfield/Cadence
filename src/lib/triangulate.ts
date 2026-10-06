@@ -1,5 +1,11 @@
 import { RUBRIC } from "./rubric";
-import type { Assessment, DimensionId, LessonSummary, Misconception, StudentResult } from "./types";
+import type {
+  Assessment,
+  DimensionId,
+  LessonSummary,
+  Misconception,
+  StudentResult,
+} from "./types";
 
 export const DEFAULT_MASTERY = 70;
 
@@ -8,17 +14,39 @@ export const DEFAULT_MASTERY = 70;
  * A header row is skipped automatically. `defaultMax` is used when no max column exists.
  */
 export function parseResults(raw: string, defaultMax: number): StudentResult[] {
-  const rows = raw
-    .split(/\r?\n/)
-    .map((l) => l.split(/[,\t;]/).map((c) => c.trim()))
-    .filter((c) => c.length >= 2 && c[0] !== "");
+  if (!Number.isFinite(defaultMax) || defaultMax <= 0)
+    throw new Error("Maximum score must be positive");
   const results: StudentResult[] = [];
-  for (const [student, score, max] of rows) {
-    const s = parseFloat(score);
-    if (Number.isNaN(s)) continue; // header or junk
-    const m = max !== undefined && max !== "" ? parseFloat(max) : defaultMax;
-    if (!m || Number.isNaN(m)) continue;
-    results.push({ student, score: s, max: m });
+  const names = new Set<string>();
+  for (const [index, line] of raw.split(/\r?\n/).entries()) {
+    if (!line.trim()) continue;
+    const cells = line.split(/[,\t;]/).map((s) => s.trim());
+    if (
+      results.length === 0 &&
+      cells[0]?.toLowerCase() === "student" &&
+      cells[1]?.toLowerCase() === "score"
+    )
+      continue;
+    const [student, score, max] = cells;
+    if (cells.length < 2 || cells.length > 3 || !student || !score)
+      throw new Error(`Row ${index + 1}: use student, score[, max]`);
+    const value = Number(score),
+      maximum = max ? Number(max) : defaultMax;
+    if (
+      !Number.isFinite(value) ||
+      !Number.isFinite(maximum) ||
+      maximum <= 0 ||
+      value < 0 ||
+      value > maximum
+    )
+      throw new Error(
+        `Row ${index + 1}: score must be between 0 and a positive maximum`,
+      );
+    const key = student.toLowerCase();
+    if (names.has(key))
+      throw new Error(`Row ${index + 1}: duplicate student ${student}`);
+    names.add(key);
+    results.push({ student, score: value, max: maximum });
   }
   return results;
 }
@@ -34,10 +62,16 @@ export function parseMisconceptions(raw: string): Misconception[] {
     .map((l) => l.trim())
     .filter(Boolean)
     .map((line, i) => {
-      const m = line.match(/^(.*?)[\s(]*(?:x\s?(\d+)|(\d+)\s*students?)\)?\s*$/i);
+      const m = line.match(
+        /^(.*?)[\s(]*(?:x\s?(\d+)|(\d+)\s*students?)\)?\s*$/i,
+      );
       if (m && m[1].trim()) {
         const count = parseInt(m[2] ?? m[3], 10);
-        return { id: `mc${i + 1}`, text: m[1].trim().replace(/[-–—,]\s*$/, ""), studentCount: Number.isFinite(count) ? count : undefined };
+        return {
+          id: `mc${i + 1}`,
+          text: m[1].trim().replace(/[-–—,]\s*$/, ""),
+          studentCount: Number.isFinite(count) ? count : undefined,
+        };
       }
       return { id: `mc${i + 1}`, text: line };
     });
@@ -54,30 +88,46 @@ export function buildAssessment(
     kind,
     uploadedAt: new Date().toISOString(),
     results,
-    meanPct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0,
-    masteryPct: pcts.length ? Math.round((pcts.filter((p) => p >= masteryThreshold).length / pcts.length) * 100) : 0,
+    meanPct: pcts.length
+      ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length)
+      : 0,
+    masteryPct: pcts.length
+      ? Math.round(
+          (pcts.filter((p) => p >= masteryThreshold).length / pcts.length) *
+            100,
+        )
+      : 0,
     masteryThreshold,
     misconceptions,
   };
 }
 
-export type Verdict = "aligned-strong" | "aligned-weak" | "delivery-not-landing" | "outcomes-beat-delivery";
+export type Verdict =
+  | "aligned-strong"
+  | "aligned-weak"
+  | "delivery-not-landing"
+  | "outcomes-beat-delivery";
 
 /** Compare how the lesson *sounded* with what students *could do*. */
-export function triangulate(overall: number, masteryPct: number): { verdict: Verdict; headline: string; detail: string } {
+export function triangulate(
+  overall: number,
+  masteryPct: number,
+): { verdict: Verdict; headline: string; detail: string } {
   const goodDelivery = overall >= 55;
   const goodOutcome = masteryPct >= 60;
   if (goodDelivery && goodOutcome)
     return {
       verdict: "aligned-strong",
       headline: "Delivery and outcomes agree",
-      detail: "The teaching moves Cadence heard are showing up in what students can do. Keep these moves.",
+      detail:
+        "The teaching moves Cadence heard are showing up in what students can do. Keep these moves.",
     };
   if (!goodDelivery && !goodOutcome)
     return {
       verdict: "aligned-weak",
       headline: "Both signals point the same way",
-      detail: "Delivery scored low and so did outcomes. Start with the top next step — it's the most likely lever.",
+      detail:
+        "Delivery scored low and so did outcomes. Start with the top next step — it's the most likely lever.",
     };
   if (goodDelivery)
     return {
@@ -126,21 +176,55 @@ export function outcomeDrivers(lessons: LessonSummary[]): Driver[] {
     key: d.id,
     label: d.name,
     r: pearson(
-      paired.map((l) => l.analysis!.dimensions.find((x) => x.id === (d.id as DimensionId))?.score ?? 0),
+      paired.map(
+        (l) =>
+          l.analysis!.dimensions.find((x) => x.id === (d.id as DimensionId))
+            ?.score ?? 0,
+      ),
       y,
     ),
     n: paired.length,
   }));
-  const metric = (key: string, label: string, f: (l: LessonSummary) => number | null): Driver => {
-    const rows = paired.map((l) => [f(l), l.assessment!.masteryPct] as const).filter(([x]) => x !== null) as [number, number][];
-    return { key, label, r: pearson(rows.map((r) => r[0]), rows.map((r) => r[1])), n: rows.length };
+  const metric = (
+    key: string,
+    label: string,
+    f: (l: LessonSummary) => number | null,
+  ): Driver => {
+    const rows = paired
+      .map((l) => [f(l), l.assessment!.masteryPct] as const)
+      .filter(([x]) => x !== null) as [number, number][];
+    return {
+      key,
+      label,
+      r: pearson(
+        rows.map((r) => r[0]),
+        rows.map((r) => r[1]),
+      ),
+      n: rows.length,
+    };
   };
   return [
     ...dims,
-    metric("openQuestionPct", "% open questions", (l) => l.analysis!.metrics.openQuestionPct),
-    metric("meanWaitTime", "Mean wait time", (l) => l.analysis!.metrics.meanWaitTime),
-    metric("wpm", "Speaking pace (wpm)", (l) => l.analysis!.metrics.wordsPerMinute),
-    metric("teacherTalk", "Teacher talk %", (l) => l.analysis!.metrics.teacherTalkPct),
+    metric(
+      "openQuestionPct",
+      "% open questions",
+      (l) => l.analysis!.metrics.openQuestionPct,
+    ),
+    metric(
+      "meanWaitTime",
+      "Mean wait time",
+      (l) => l.analysis!.metrics.meanWaitTime,
+    ),
+    metric(
+      "wpm",
+      "Speaking pace (wpm)",
+      (l) => l.analysis!.metrics.wordsPerMinute,
+    ),
+    metric(
+      "teacherTalk",
+      "Teacher talk %",
+      (l) => l.analysis!.metrics.teacherTalkPct,
+    ),
   ].sort((a, b) => Math.abs(b.r ?? 0) - Math.abs(a.r ?? 0));
 }
 
@@ -155,11 +239,18 @@ export interface ClassMisconception {
 
 /** Slug used to link from a lesson's exit ticket to its class's section on the Misconceptions page. */
 export function classSlug(yearGroup: string): string {
-  return (yearGroup || "unassigned").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "unassigned";
+  return (
+    (yearGroup || "unassigned")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "unassigned"
+  );
 }
 
 /** Group misconceptions by class, merging identical (case/whitespace-insensitive) text across lessons. */
-export function misconceptionsByClass(lessons: LessonSummary[]): { yearGroup: string; items: ClassMisconception[] }[] {
+export function misconceptionsByClass(
+  lessons: LessonSummary[],
+): { yearGroup: string; items: ClassMisconception[] }[] {
   const byClass = new Map<string, Map<string, ClassMisconception>>();
   for (const l of lessons) {
     const mcs = l.assessment?.misconceptions;
@@ -187,7 +278,11 @@ export function misconceptionsByClass(lessons: LessonSummary[]): { yearGroup: st
   return [...byClass.entries()]
     .map(([yearGroup, items]) => ({
       yearGroup,
-      items: [...items.values()].sort((a, b) => b.totalStudentCount - a.totalStudentCount || b.occurrences - a.occurrences),
+      items: [...items.values()].sort(
+        (a, b) =>
+          b.totalStudentCount - a.totalStudentCount ||
+          b.occurrences - a.occurrences,
+      ),
     }))
     .sort((a, b) => a.yearGroup.localeCompare(b.yearGroup));
 }

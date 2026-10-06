@@ -37,7 +37,7 @@ export function extractQuestions(segments: TranscriptSegment[], roster?: string[
       // A question followed only by a think-time cue still ends the teacher's turn.
       const isLast = j === sentences.length - 1 || sentences.slice(j + 1).every((x) => THINK_TIME.test(x));
       const next = segments[i + 1];
-      const waitTime = isLast
+      const waitTime = seg.timing === "estimated" || next?.timing === "estimated" ? null : isLast
         ? next
           ? Math.max(0, +(next.start - seg.end).toFixed(1))
           : null

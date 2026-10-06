@@ -1,116 +1,174 @@
 "use client";
-
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Award, Check, Clock, DoorOpen, ShieldAlert, Undo2, X } from "lucide-react";
+import { useState, type CSSProperties } from "react";
+import Link from "next/link";
+import { Check, Undo2, X } from "lucide-react";
 import { formatClock } from "@/lib/transcript";
 import type { BehaviourEvent, BehaviourType } from "@/lib/types";
-
-const META: Record<BehaviourType, { label: string; color: string; icon: typeof Award }> = {
-  merit: { label: "Merit", color: "var(--lime)", icon: Award },
-  demerit: { label: "Demerit", color: "var(--amber)", icon: ShieldAlert },
-  detention: { label: "Detention", color: "var(--red)", icon: Clock },
-  "room-removal": { label: "Room removal", color: "var(--red)", icon: DoorOpen },
+import { useFeedback } from "./Feedback";
+const META: Record<BehaviourType, { label: string; color: string }> = {
+  merit: { label: "Merit", color: "var(--green)" },
+  demerit: { label: "Demerit", color: "var(--amber)" },
+  detention: { label: "Detention", color: "var(--red)" },
+  "room-removal": { label: "Room removal", color: "var(--red)" },
 };
-
-export function BehaviourPanel({ lessonId, events, roster }: { lessonId: string; events: BehaviourEvent[]; roster: string[] }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState<string | null>(null);
-
-  async function update(eventId: string, patch: { status: BehaviourEvent["status"]; studentMatch?: string }) {
-    setBusy(eventId);
-    await fetch(`/api/lessons/${lessonId}/behaviour`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ eventId, ...patch }),
-    });
-    setBusy(null);
-    router.refresh();
+export function BehaviourPanel({
+  lessonId,
+  events,
+  roster,
+  context,
+  pendingOnly = false,
+}: {
+  lessonId: string;
+  events: BehaviourEvent[];
+  roster: string[];
+  context?: string;
+  pendingOnly?: boolean;
+}) {
+  const router = useRouter(),
+    notify = useFeedback();
+  const [busy, setBusy] = useState<string | null>(null),
+    [error, setError] = useState("");
+  const [choices, setChoices] = useState<Record<string, string>>({});
+  async function update(e: BehaviourEvent, status: BehaviourEvent["status"]) {
+    setBusy(e.id);
+    setError("");
+    try {
+      const res = await fetch(`/api/lessons/${lessonId}/behaviour`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          eventId: e.id,
+          status,
+          studentMatch: choices[e.id] || e.studentMatch || undefined,
+        }),
+      });
+      if (!res.ok)
+        throw new Error((await res.json()).error ?? "Could not update event");
+      notify(
+        status === "confirmed"
+          ? "Approved — added to the confirmed tally"
+          : status === "dismissed"
+            ? "Denied — detection dismissed"
+            : "Returned to review",
+      );
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Connection failed. Try again.",
+      );
+    } finally {
+      setBusy(null);
+    }
   }
-
-  if (!events.length) {
-    return (
+  const visible = pendingOnly
+    ? events.filter((e) => e.status === "pending")
+    : [...events].sort(
+        (a, b) =>
+          Number(b.status === "pending") - Number(a.status === "pending"),
+      );
+  if (!visible.length)
+    return pendingOnly ? null : (
       <div className="glass p-5 text-sm text-muted">
-        No merits or sanctions detected in this transcript. Cadence listens for phrases like “that&apos;s a merit” or
-        “detention” — it never requires a teacher to log these by hand.
+        No merits or sanctions detected in this transcript.
       </div>
     );
-  }
-
-  const pending = events.filter((e) => e.status === "pending");
-  const decided = events.filter((e) => e.status !== "pending");
-
   return (
-    <div className="flex flex-col gap-3">
-      {pending.length > 0 && (
-        <p className="text-xs text-dim">
-          Detected from what was said — nothing counts toward a student&apos;s record until you confirm it.
+    <>
+      {error && (
+        <p role="alert" className="text-red text-sm">
+          {error}
         </p>
       )}
-      {[...pending, ...decided].map((e) => {
-        const m = META[e.type];
-        const Icon = m.icon;
-        const name = e.studentMatch ?? e.studentRaw;
+      {visible.map((e) => {
+        const m = META[e.type],
+          name =
+            choices[e.id] || e.studentMatch || e.studentRaw || "Pick student";
         return (
-          <div key={e.id} className={`glass p-4 flex items-start gap-3 ${e.status === "dismissed" ? "opacity-50" : ""}`}>
-            <span className="size-8 shrink-0 grid place-items-center rounded-full" style={{ background: `color-mix(in srgb, ${m.color} 15%, transparent)`, color: m.color }}>
-              <Icon size={15} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-medium" style={{ color: m.color }}>{m.label}</span>
-                <span className="font-mono text-[11px] text-dim">{formatClock(e.at)}</span>
-                {name ? (
-                  <span className="chip">{name}{!e.studentMatch && " · unconfirmed name"}</span>
-                ) : (
-                  <span className="chip">no name heard</span>
-                )}
+          <article
+            key={e.id}
+            className={`glass review-card ${e.status === "dismissed" ? "opacity-50" : ""}`}
+            style={{ "--event-color": m.color } as CSSProperties}
+          >
+            <div className="flex gap-3 items-center">
+              <span className="review-avatar">
+                {name
+                  .split(/\s+/)
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)}
+              </span>
+              <div>
+                <b className="text-[14px]">{name}</b>
+                <p className="text-xs text-muted">
+                  {m.label} · {formatClock(e.at)}
+                  {e.status !== "pending" && ` · ${e.status}`}
+                </p>
               </div>
-              <p className="mt-1.5 text-sm text-muted leading-relaxed">“{e.quote}”</p>
-
-              {e.status === "pending" && !e.studentMatch && roster.length > 0 && (
-                <select
-                  className="field mt-2 h-9 text-xs max-w-[220px]"
-                  defaultValue=""
-                  onChange={(ev) => ev.target.value && update(e.id, { status: "confirmed", studentMatch: ev.target.value })}
+            </div>
+            <p className="mt-3 text-[13px] text-muted leading-relaxed">
+              “{e.quote}”
+            </p>
+            {context && (
+              <Link
+                href={`/lessons/${lessonId}`}
+                className="block text-[11px] text-dim mt-3"
+              >
+                {context}
+              </Link>
+            )}
+            {e.status === "pending" && !e.studentMatch && (
+              <select
+                aria-label={`Student for ${m.label} at ${formatClock(e.at)}`}
+                className="field mt-3"
+                value={choices[e.id] ?? ""}
+                onChange={(ev) =>
+                  setChoices({ ...choices, [e.id]: ev.target.value })
+                }
+              >
+                <option value="">Pick student…</option>
+                {roster.map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            )}
+            <div className="review-actions">
+              {e.status === "pending" ? (
+                <>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ color: "var(--green)" }}
+                    disabled={
+                      busy === e.id || !(choices[e.id] || e.studentMatch)
+                    }
+                    onClick={() => update(e, "confirmed")}
+                  >
+                    <Check size={14} />
+                    Approve
+                  </button>
+                  <button
+                    className="btn btn-ghost text-dim"
+                    disabled={busy === e.id}
+                    onClick={() => update(e, "dismissed")}
+                  >
+                    <X size={14} />
+                    Deny
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="btn btn-ghost"
+                  disabled={busy === e.id}
+                  onClick={() => update(e, "pending")}
                 >
-                  <option value="" disabled>
-                    {e.candidates.length ? "Which one?" : "Pick student…"}
-                  </option>
-                  {(e.candidates.length ? e.candidates : roster).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
+                  <Undo2 size={14} />
+                  Undo
+                </button>
               )}
             </div>
-
-            {e.status === "pending" ? (
-              <div className="flex gap-1.5 shrink-0">
-                <button
-                  className="btn btn-ghost !h-9 !px-3 !text-lime !border-lime/30"
-                  disabled={busy === e.id || !e.studentMatch}
-                  title={e.studentMatch ? "Confirm" : "Pick a student first"}
-                  onClick={() => update(e.id, { status: "confirmed" })}
-                >
-                  <Check size={14} />
-                </button>
-                <button className="btn btn-ghost !h-9 !px-3 !text-dim" disabled={busy === e.id} onClick={() => update(e.id, { status: "dismissed" })}>
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                className="btn btn-ghost !h-9 !px-3 !text-dim shrink-0"
-                disabled={busy === e.id}
-                onClick={() => update(e.id, { status: "pending" })}
-                title="Undo"
-              >
-                <Undo2 size={14} />
-              </button>
-            )}
-          </div>
+          </article>
         );
       })}
-    </div>
+    </>
   );
 }

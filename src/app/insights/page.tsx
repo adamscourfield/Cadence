@@ -36,7 +36,7 @@ export default async function InsightsPage() {
         <EmptyState title="Not enough paired data yet">Upload exit-ticket results for at least three analysed lessons to unlock insights.</EmptyState>
       ) : (
         <>
-          <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 rise">
+          <section className="overview-stats rise">
             <Stat label="Paired lessons" value={paired.length} hint="transcript + outcomes" />
             <Stat label="Delivery ↔ mastery" value={r === null ? "—" : `r = ${r}`} hint={strength(r)} accent="var(--cyan)" />
             <Stat
@@ -47,7 +47,7 @@ export default async function InsightsPage() {
             <Stat label="Teachers" value={new Set(paired.map((l) => l.teacher)).size} />
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-4 mt-4 rise" style={{ animationDelay: "60ms" }}>
+          <section className="overview-top mt-4 rise" style={{ animationDelay: "60ms" }}>
             <div className="glass p-5">
               <div className="eyebrow">Delivery vs mastery</div>
               <Scatter points={paired.map((l) => ({ id: l.id, title: l.title, x: l.analysis!.overall, y: l.assessment!.masteryPct }))} />
@@ -63,7 +63,7 @@ export default async function InsightsPage() {
                       <span className="absolute left-1/2 top-[-3px] bottom-[-3px] w-px bg-line-strong" />
                       {d.r !== null && (
                         <span
-                          className="absolute top-0 bottom-0 rounded-full"
+                          className="absolute top-0 bottom-0 rounded-full dimension-fill"
                           style={{
                             left: d.r >= 0 ? "50%" : `${50 + d.r * 50}%`,
                             width: `${Math.abs(d.r) * 50}%`,
@@ -80,7 +80,7 @@ export default async function InsightsPage() {
           </section>
 
           <section className="mt-8 rise" style={{ animationDelay: "120ms" }}>
-            <h2 className="text-xl font-semibold tracking-tight">What high-outcome lessons say</h2>
+            <h2 className="text-[16px] font-semibold tracking-tight">What high-outcome lessons say</h2>
             <p className="text-sm text-muted mt-1">
               Teacher phrases that appear disproportionately in the top {phrases.groups.high} vs bottom {phrases.groups.low} lessons by mastery. Only phrases used across two or more subjects are shown, to filter out topic vocabulary.
             </p>
@@ -105,8 +105,8 @@ function Scatter({ points }: { points: { id: string; title: string; x: number; y
   return (
     <div className="mt-4">
       <div className="relative aspect-[4/3] w-full rounded-xl border border-line bg-well overflow-hidden">
-        <div className="absolute left-1/2 inset-y-0 w-px bg-line" />
-        <div className="absolute top-1/2 inset-x-0 h-px bg-line" />
+        <div className="absolute left-[55%] inset-y-0 w-px bg-line" />
+        <div className="absolute top-[40%] inset-x-0 h-px bg-line" />
         <span className="absolute left-2 top-2 text-[10px] text-dim">outcomes beat delivery</span>
         <span className="absolute right-2 top-2 text-[10px] text-lime">aligned · strong</span>
         <span className="absolute left-2 bottom-2 text-[10px] text-dim">aligned · weak</span>

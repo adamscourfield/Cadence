@@ -7,6 +7,7 @@ export interface TranscriptSegment {
   end: number;
   speaker: Speaker;
   text: string;
+  timing?: "measured" | "estimated";
 }
 
 export type QuestionType = "closed" | "open" | "higher-order" | "procedural" | "rhetorical";
@@ -83,11 +84,20 @@ export interface StudentResult {
   max: number;
 }
 
+export interface MisconceptionEvidence {
+  student: string;
+  answer: string;
+  explanation: string;
+  provenance: "teacher" | "demo";
+}
+export interface MisconceptionFollowUp { groupId:string; addressedAt:string|null; addressedObservations:string[]; }
 export interface Misconception {
   id: string;
   text: string;
   /** How many students' answers reflected this, when the teacher noted a count. */
   studentCount?: number;
+  evidence?: MisconceptionEvidence[];
+  suggestedAction?: string;
 }
 
 export interface Assessment {

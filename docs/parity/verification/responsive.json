@@ -1,0 +1,290 @@
+[
+  {
+    "view": "overview",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "overview",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "overview",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "overview",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "live",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "live",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "live",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "live",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "report",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "report",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "report",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "report",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "behaviour",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "behaviour",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "behaviour",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "behaviour",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "misconceptions",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "misconceptions",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "misconceptions",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "misconceptions",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "insights",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "insights",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "insights",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "insights",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "rubric",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "rubric",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "rubric",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "rubric",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "import",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "import",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "import",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "import",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  },
+  {
+    "view": "lessons",
+    "width": 1440,
+    "actual": {
+      "scroll": 1440,
+      "w": 1440
+    }
+  },
+  {
+    "view": "lessons",
+    "width": 1024,
+    "actual": {
+      "scroll": 1024,
+      "w": 1024
+    }
+  },
+  {
+    "view": "lessons",
+    "width": 768,
+    "actual": {
+      "scroll": 768,
+      "w": 768
+    }
+  },
+  {
+    "view": "lessons",
+    "width": 390,
+    "actual": {
+      "scroll": 390,
+      "w": 390
+    }
+  }
+]

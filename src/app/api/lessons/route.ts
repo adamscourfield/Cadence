@@ -12,6 +12,7 @@ const Segment = z.object({
   end: z.number(),
   speaker: z.enum(["teacher", "student", "unknown"]),
   text: z.string(),
+  timing: z.enum(["measured","estimated"]).optional(),
 });
 
 const Body = z
@@ -21,7 +22,7 @@ const Body = z
     yearGroup: z.string().trim().max(40).default(""),
     teacher: z.string().trim().max(120).default("Me"),
     objective: z.string().trim().max(400).optional(),
-    source: z.enum(["live", "import"]),
+    source: z.enum(["live", "import", "demo"]),
     segments: z.array(Segment).optional(),
     rawTranscript: z.string().max(2_000_000).optional(),
   })

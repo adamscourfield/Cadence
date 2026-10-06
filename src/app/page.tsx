@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, Mic, Sparkles, Upload } from "lucide-react";
+import { ArrowRight, Mic, Upload } from "lucide-react";
 import { listLessons } from "@/lib/store";
 import { RUBRIC } from "@/lib/rubric";
 import { LessonRow } from "@/components/LessonRow";
-import { LevelBar, PageHeader, ScoreRing, Stat, TrendChart, formatDuration } from "@/components/ui";
+import { PageHeader, ScoreRing, Stat, TrendChart, formatDuration } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const lessons = await listLessons();
   const analysed = lessons.filter((l) => l.analysis);
-  const recent = analysed.slice(0, 5);
+  const recent = analysed.slice(0, 4);
   const chrono = [...analysed].reverse();
 
   const avg = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : 0);
@@ -21,6 +21,7 @@ export default async function Dashboard() {
   const withOutcomes = analysed.filter((l) => l.assessment);
   const awaiting = analysed.filter((l) => !l.assessment);
 
+  const waits = last5.map(l=>l.analysis!.metrics.meanWaitTime).filter((n): n is number=>n!==null);
   const dimAvg = RUBRIC.map((d) => {
     const scores = last5.map((l) => l.analysis!.dimensions.find((x) => x.id === d.id)?.score ?? 0);
     return { d, score: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0 };
@@ -37,10 +38,10 @@ export default async function Dashboard() {
         </Link>
       </PageHeader>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-4 rise" style={{ animationDelay: "60ms" }}>
-        <div className="glass p-6 flex flex-col sm:flex-row items-center gap-6">
-          <ScoreRing value={current} size={150} label="last 5" />
-          <div className="flex-1 w-full">
+      <section className="overview-top rise" style={{ animationDelay: "60ms" }}>
+        <div className="glass overview-score">
+          <ScoreRing value={current} size={136} label="last 5" />
+          <div className="overview-dimensions">
             <div className="eyebrow">Delivery score</div>
             <div className="mt-1 text-sm text-muted">
               {prev5.length ? (
@@ -58,7 +59,7 @@ export default async function Dashboard() {
               {dimAvg.map(({ d, score }) => (
                 <div key={d.id} className="grid grid-cols-[92px_1fr_28px] items-center gap-3 text-xs">
                   <span className="text-muted truncate">{d.short}</span>
-                  <LevelBar score={Math.round(score)} />
+                  <div className="dimension-track"><div className="dimension-fill" style={{width:`${score/4*100}%`,background:score>=3.5?"var(--green)":score>=3?"var(--indigo)":"var(--amber)"}} /></div>
                   <span className="tabular-nums text-right text-muted">{score.toFixed(1)}</span>
                 </div>
               ))}
@@ -66,13 +67,14 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div className="glass p-6">
+        <div className="glass p-5 min-w-0">
           <div className="flex items-center justify-between">
             <div className="eyebrow">Trajectory</div>
             <span className="chip">{chrono.length} lessons</span>
           </div>
           <div className="mt-4">
             <TrendChart
+              labels={chrono.map(l=>l.title)}
               series={[
                 { label: "Delivery score", color: "var(--cyan)", values: chrono.map((l) => l.analysis!.overall) },
                 { label: "Student mastery %", color: "var(--pink)", values: chrono.map((l) => l.assessment?.masteryPct ?? null) },
@@ -82,7 +84,7 @@ export default async function Dashboard() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 rise" style={{ animationDelay: "120ms" }}>
+      <section className="overview-stats rise" style={{ animationDelay: "120ms" }}>
         <Stat label="Lessons analysed" value={analysed.length} hint={`${formatDuration(analysed.reduce((a, l) => a + l.analysis!.metrics.durationSec, 0))} of talk`} />
         <Stat
           label="Open questions"
@@ -92,7 +94,7 @@ export default async function Dashboard() {
         />
         <Stat
           label="Mean wait time"
-          value={`${(last5.reduce((a, l) => a + (l.analysis!.metrics.meanWaitTime ?? 0), 0) / Math.max(1, last5.length)).toFixed(1)}s`}
+          value={waits.length ? `${(waits.reduce((a,b)=>a+b,0)/waits.length).toFixed(1)}s` : "—"}
           hint="research target ≥ 3s"
           accent="var(--violet)"
         />
@@ -104,8 +106,8 @@ export default async function Dashboard() {
         />
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mt-4 rise" style={{ animationDelay: "180ms" }}>
-        <div className="glass p-2 sm:p-3">
+      <section className="overview-bottom rise" style={{ animationDelay: "180ms" }}>
+        <div className="glass overflow-hidden">
           <div className="flex items-center justify-between px-3 pt-3 pb-2">
             <div className="eyebrow">Recent lessons</div>
             <Link href="/lessons" className="text-xs text-muted hover:text-text flex items-center gap-1">
@@ -118,17 +120,6 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {last5[0]?.analysis?.nextSteps[0] && (
-            <div className="glass p-5 relative overflow-hidden">
-              <div className="eyebrow flex items-center gap-2">
-                <Sparkles size={12} className="text-violet" /> Focus for next lesson
-              </div>
-              <p className="mt-3 text-sm leading-relaxed">{last5[0].analysis.nextSteps[0]}</p>
-              <Link href={`/lessons/${last5[0].id}`} className="mt-4 inline-flex text-xs text-cyan items-center gap-1">
-                From “{last5[0].title}” <ArrowRight size={12} />
-              </Link>
-            </div>
-          )}
           {awaiting.length > 0 && (
             <div className="glass p-5">
               <div className="eyebrow">Close the loop</div>

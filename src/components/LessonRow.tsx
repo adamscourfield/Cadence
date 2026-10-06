@@ -8,20 +8,20 @@ export function LessonRow({ lesson }: { lesson: LessonSummary }) {
   return (
     <Link
       href={`/lessons/${lesson.id}`}
-      className="group flex items-center gap-4 rounded-2xl px-3 py-3 hover:bg-panel-strong transition-colors"
+      className="group lesson-row"
     >
       <div
-        className="grid place-items-center size-12 shrink-0 rounded-xl border font-semibold tabular-nums"
+        className="grid place-items-center size-10 shrink-0 rounded-[8px] border font-semibold tabular-nums"
         style={{
           borderColor: a ? scoreColor(a.overall) : "var(--line)",
           color: a ? scoreColor(a.overall) : "var(--muted)",
-          boxShadow: a ? `0 0 24px -10px ${scoreColor(a.overall)}` : undefined,
+
         }}
       >
         {a ? a.overall : "–"}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-medium truncate">{lesson.title}</div>
+        <div className="font-semibold text-[13px] truncate">{lesson.title}</div>
         <div className="text-xs text-muted truncate mt-0.5">
           {lesson.subject}
           {lesson.yearGroup && ` · ${lesson.yearGroup}`} · {formatDate(lesson.date)}

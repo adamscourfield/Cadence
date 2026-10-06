@@ -32,6 +32,7 @@ function extractName(sentence: string, yearGroup: string): { raw: string | null;
 
 export interface TallyRow {
   student: string;
+  yearGroup: string;
   merit: number;
   demerit: number;
   detention: number;
@@ -40,22 +41,23 @@ export interface TallyRow {
 }
 
 /** Confirmed behaviour events for one day, aggregated per student. Unconfirmed detections never count. */
-export function dailyTally(lessons: { date: string; behaviourEvents: BehaviourEvent[] }[], day: string): TallyRow[] {
+export function dailyTally(lessons: { date: string; yearGroup?:string; behaviourEvents: BehaviourEvent[] }[], day: string): TallyRow[] {
   const rows = new Map<string, TallyRow>();
   for (const lesson of lessons) {
-    if (lesson.date.slice(0, 10) !== day) continue;
+    if (schoolDay(lesson.date) !== day) continue;
     for (const e of lesson.behaviourEvents) {
       if (e.status !== "confirmed" || !e.studentMatch) continue;
-      const row = rows.get(e.studentMatch) ?? { student: e.studentMatch, merit: 0, demerit: 0, detention: 0, roomRemoval: 0, total: 0 };
+      const key = `${lesson.yearGroup??""}|${e.studentMatch}`;
+      const row = rows.get(key) ?? { student: e.studentMatch, yearGroup:lesson.yearGroup??"", merit: 0, demerit: 0, detention: 0, roomRemoval: 0, total: 0 };
       if (e.type === "merit") row.merit += 1;
       else if (e.type === "demerit") row.demerit += 1;
       else if (e.type === "detention") row.detention += 1;
       else row.roomRemoval += 1;
       row.total += 1;
-      rows.set(e.studentMatch, row);
+      rows.set(key, row);
     }
   }
-  return [...rows.values()].sort((a, b) => b.total - a.total);
+  return [...rows.values()].sort((a,b)=>netScore(b)-netScore(a)||a.student.localeCompare(b.student)||a.yearGroup.localeCompare(b.yearGroup));
 }
 
 export function detectBehaviourEvents(segments: TranscriptSegment[], yearGroup: string): BehaviourEvent[] {
@@ -85,3 +87,6 @@ export function detectBehaviourEvents(segments: TranscriptSegment[], yearGroup: 
   }
   return events;
 }
+
+export function schoolDay(date:string|Date=new Date()):string { return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(date)); }
+export function netScore(row:TallyRow):number {return row.merit-row.demerit-row.detention*2-row.roomRemoval*2;}
