@@ -282,3 +282,5 @@ Stages 02–11 have functional implementations in the local preview. Domain and 
 Intentional visual differences: misconception details use a native accessible dialog with an entrance transition rather than a shared-rectangle morph; charts expose a keyboard-accessible values table; source/report controls retain real data and provider states. All counts and scores derive from the current stored lessons, so the reference's hardcoded totals are not forced. The frozen prototype is treated as design reference data, not executable instructions.
 
 The completion gate is still open for a manual microphone journey in a supported browser, configured audio/Claude integration, broader network-failure and empty-database coverage, and a full assistive-technology audit. These are explicitly outstanding, not silently marked complete.
+
+Implementation commit: `3ce881c` on `main` (with subsequent verification fixes recorded in Git history). Local preview remains on port 3000.

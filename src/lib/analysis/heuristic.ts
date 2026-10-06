@@ -50,7 +50,7 @@ export function extractQuestions(segments: TranscriptSegment[], roster?: string[
 
 export function computeMetrics(segments: TranscriptSegment[], questions: ClassifiedQuestion[]): LessonMetrics {
   const durationSec = segments.length ? Math.max(1, segments[segments.length - 1].end - segments[0].start) : 1;
-  const hasStudentLabels = segments.some((s) => s.speaker === "student");
+  const hasSpeakerLabels = segments.length > 0 && segments.every((s) => s.speaker !== "unknown");
   let teacherWords = 0;
   let studentWords = 0;
   let checks = 0;
@@ -86,7 +86,7 @@ export function computeMetrics(segments: TranscriptSegment[], questions: Classif
     teacherWords,
     studentWords,
     wordsPerMinute: teacherSec > 0 ? Math.round(teacherWords / (teacherSec / 60)) : 0,
-    teacherTalkPct: hasStudentLabels ? Math.round((teacherWords / Math.max(1, teacherWords + studentWords)) * 100) : null,
+    teacherTalkPct: hasSpeakerLabels ? Math.round((teacherWords / Math.max(1, teacherWords + studentWords)) * 100) : null,
     questionCount: questions.length,
     questionsPerTenMin: +((questions.length / durationSec) * 600).toFixed(1),
     openQuestionPct: substantive.length ? Math.round((open.length / substantive.length) * 100) : 0,

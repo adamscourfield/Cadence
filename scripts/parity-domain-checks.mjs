@@ -161,3 +161,6 @@ assert.equal(parseResults("\nstudent,score\nA,3", 10).length, 1);
 console.log(
   "Transcript checks passed: plain/timestamped estimates, VTT/SRT measured pauses and speaker labels.",
 );
+
+assert.equal(computeMetrics(parseTranscript("T: Only the teacher speaks."), []).teacherTalkPct,100);
+assert.equal(computeMetrics(parseTranscript("Unlabelled speech.\nS: An answer."), []).teacherTalkPct,null);
